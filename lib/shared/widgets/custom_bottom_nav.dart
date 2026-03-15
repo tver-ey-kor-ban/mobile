@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/features/home/presentation/pages/services_list_page.dart';
+import 'package:my_app/features/home/presentation/pages/home_page.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;

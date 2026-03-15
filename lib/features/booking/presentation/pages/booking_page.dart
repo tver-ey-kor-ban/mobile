@@ -58,7 +58,7 @@ class _BookingPageState extends State<BookingPage> {
       setState(() => currentStep++);
     } else {
       // Final Submit Logic
-      print("Submit Booking to FastAPI backend!");
+      debugPrint("Submit Booking to FastAPI backend!");
     }
   }
 
