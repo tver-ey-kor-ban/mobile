@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../pages/services_list_page.dart';
 
 class ServicesGrid extends StatelessWidget {
   const ServicesGrid({super.key});
@@ -32,27 +33,39 @@ class ServicesGrid extends StatelessWidget {
       ),
       itemCount: services.length,
       itemBuilder: (context, index) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: Colors.grey.shade100),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                services[index]['icon'] as IconData,
-                color: services[index]['color'] as Color,
-                size: 30,
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ServicesListPage(
+                  categoryName: services[index]['name'] as String,
+                ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                services[index]['name'] as String,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 13),
-              ),
-            ],
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: Colors.grey.shade100),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  services[index]['icon'] as IconData,
+                  color: services[index]['color'] as Color,
+                  size: 30,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  services[index]['name'] as String,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ],
+            ),
           ),
         );
       },
