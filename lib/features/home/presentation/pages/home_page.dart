@@ -30,8 +30,6 @@ class HomePage extends StatelessWidget {
 
             SectionHeader(title: "Popular Services"),
             // Map your service data here
-            PopularServiceCard(title: "Oil Change", price: "25", rating: 4.8),
-            PopularServiceCard(title: "New Tires", price: "35", rating: 4.7),
             const PopularServiceCard(
               title: "Oil Change",
               price: "25",
@@ -46,7 +44,6 @@ class HomePage extends StatelessWidget {
               icon: Icons.tire_repair,
               gradientColors: [Colors.blue, Colors.lightBlue],
             ),
-
 
             SectionHeader(title: "Featured Products"),
             Padding(
