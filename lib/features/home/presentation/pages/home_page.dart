@@ -29,8 +29,20 @@ class HomePage extends StatelessWidget {
 
             SectionHeader(title: "Popular Services"),
             // Map your service data here
-            PopularServiceCard(title: "Oil Change", price: "25", rating: 4.8),
-            PopularServiceCard(title: "New Tires", price: "35", rating: 4.7),
+            const PopularServiceCard(
+              title: "Oil Change",
+              price: "25",
+              rating: 4.8,
+              icon: Icons.opacity,
+              gradientColors: [Colors.purple, Colors.deepPurple],
+            ),
+            const PopularServiceCard(
+              title: "New Tires",
+              price: "35",
+              rating: 4.7,
+              icon: Icons.tire_repair,
+              gradientColors: [Colors.blue, Colors.lightBlue],
+            ),
 
             ContactInfoSection(), // Dark card at bottom
             ReadyToStartBanner(), // Orange CTA banner
