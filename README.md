@@ -12,7 +12,7 @@ The aim is to simplify the process of discovering nearby garages, booking servic
 - **Dart**
 
 ## 📁 Project Structure
-mobile/
+my_app/
  ├── lib/
  │    ├── app/              # App initialization, routing, DI, global config
  │    ├── core/             # Shared logic, constants, utilities, services
