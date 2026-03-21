@@ -29,105 +29,105 @@ class CarService {
 // Sample services data
 final List<CarService> carServices = [
   // Common services for all brands
-  CarService(
+  const CarService(
     id: 'oil_change',
     name: 'Oil Change',
     description: 'Change engine oil and oil filter',
     price: 35.0,
-    estimatedTime: const Duration(minutes: 30),
+    estimatedTime: Duration(minutes: 30),
     icon: 'oil',
     compatibleBrands: ['Toyota', 'Honda', 'Ford', 'Lexus', 'Hyundai'],
   ),
-  CarService(
+  const CarService(
     id: 'tire_rotation',
     name: 'Tire Rotation',
     description: 'Rotate tires for even wear',
     price: 25.0,
-    estimatedTime: const Duration(minutes: 20),
+    estimatedTime: Duration(minutes: 20),
     icon: 'tire',
     compatibleBrands: ['Toyota', 'Honda', 'Ford', 'Lexus', 'Hyundai'],
   ),
-  CarService(
+  const CarService(
     id: 'brake_inspection',
     name: 'Brake Inspection',
     description: 'Inspect brake pads, rotors, and fluid',
     price: 45.0,
-    estimatedTime: const Duration(minutes: 45),
+    estimatedTime: Duration(minutes: 45),
     icon: 'brake',
     compatibleBrands: ['Toyota', 'Honda', 'Ford', 'Lexus', 'Hyundai'],
   ),
-  CarService(
+  const CarService(
     id: 'air_filter',
     name: 'Air Filter Replacement',
     description: 'Replace engine air filter',
     price: 20.0,
-    estimatedTime: const Duration(minutes: 15),
+    estimatedTime: Duration(minutes: 15),
     icon: 'air',
     compatibleBrands: ['Toyota', 'Honda', 'Ford', 'Lexus', 'Hyundai'],
   ),
-  CarService(
+  const CarService(
     id: 'battery_check',
     name: 'Battery Check & Service',
     description: 'Test battery and clean terminals',
     price: 15.0,
-    estimatedTime: const Duration(minutes: 15),
+    estimatedTime: Duration(minutes: 15),
     icon: 'battery',
     compatibleBrands: ['Toyota', 'Honda', 'Ford', 'Lexus', 'Hyundai'],
   ),
-  CarService(
+  const CarService(
     id: 'ac_service',
     name: 'A/C Service',
     description: 'Check and recharge air conditioning',
     price: 85.0,
-    estimatedTime: const Duration(minutes: 60),
+    estimatedTime: Duration(minutes: 60),
     icon: 'ac',
     compatibleBrands: ['Toyota', 'Honda', 'Ford', 'Lexus', 'Hyundai'],
   ),
-  CarService(
+  const CarService(
     id: 'transmission_service',
     name: 'Transmission Service',
     description: 'Change transmission fluid',
     price: 120.0,
-    estimatedTime: const Duration(minutes: 90),
+    estimatedTime: Duration(minutes: 90),
     icon: 'transmission',
     compatibleBrands: ['Toyota', 'Honda', 'Ford', 'Lexus', 'Hyundai'],
   ),
-  CarService(
+  const CarService(
     id: 'wheel_alignment',
     name: 'Wheel Alignment',
     description: 'Align wheels for better handling',
     price: 65.0,
-    estimatedTime: const Duration(minutes: 60),
+    estimatedTime: Duration(minutes: 60),
     icon: 'alignment',
     compatibleBrands: ['Toyota', 'Honda', 'Ford', 'Lexus', 'Hyundai'],
   ),
   // Brand-specific services
-  CarService(
+  const CarService(
     id: 'toyota_hybrid_check',
     name: 'Hybrid System Check',
     description: 'Specialized hybrid battery and system inspection',
     price: 95.0,
-    estimatedTime: const Duration(minutes: 45),
+    estimatedTime: Duration(minutes: 45),
     icon: 'hybrid',
     compatibleBrands: ['Toyota', 'Lexus'],
     compatibleModels: ['Camry', 'Corolla', 'RX', 'NX'],
   ),
-  CarService(
+  const CarService(
     id: 'ford_diesel_service',
     name: 'Diesel Engine Service',
     description: 'Specialized diesel engine maintenance',
     price: 150.0,
-    estimatedTime: const Duration(minutes: 120),
+    estimatedTime: Duration(minutes: 120),
     icon: 'diesel',
     compatibleBrands: ['Ford'],
     compatibleModels: ['Ranger', 'Everest'],
   ),
-  CarService(
+  const CarService(
     id: 'luxury_detail',
     name: 'Luxury Detail Package',
     description: 'Premium interior and exterior detailing',
     price: 200.0,
-    estimatedTime: const Duration(hours: 3),
+    estimatedTime: Duration(hours: 3),
     icon: 'detail',
     compatibleBrands: ['Lexus'],
   ),

@@ -136,7 +136,7 @@ class _StepTwoCarServicesState extends State<StepTwoCarServices> {
 
   Widget _buildServiceCard(CarService service) {
     final isSelected = selectedServiceIds.contains(service.id);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: isSelected ? 2 : 0,
@@ -168,14 +168,13 @@ class _StepTwoCarServicesState extends State<StepTwoCarServices> {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? Colors.red.shade50 
-                      : Colors.grey.shade100,
+                  color: isSelected ? Colors.red.shade50 : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   _getServiceIcon(service.icon),
-                  color: isSelected ? Colors.red.shade700 : Colors.grey.shade600,
+                  color:
+                      isSelected ? Colors.red.shade700 : Colors.grey.shade600,
                   size: 24,
                 ),
               ),
@@ -240,9 +239,12 @@ class _StepTwoCarServicesState extends State<StepTwoCarServices> {
                     width: 24,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.red.shade700 : Colors.transparent,
+                      color:
+                          isSelected ? Colors.red.shade700 : Colors.transparent,
                       border: Border.all(
-                        color: isSelected ? Colors.red.shade700 : Colors.grey.shade400,
+                        color: isSelected
+                            ? Colors.red.shade700
+                            : Colors.grey.shade400,
                       ),
                       borderRadius: BorderRadius.circular(6),
                     ),

@@ -142,13 +142,13 @@ class AuthButtonsRow extends StatelessWidget {
   }
 
   Widget _buildAuthButtons(BuildContext context) {
-    return Row(
+    return const Row(
       children: [
         Expanded(
           child: AuthButton(type: AuthButtonType.login, isOutlined: true),
         ),
-        const SizedBox(width: 16),
-        Expanded(child: const AuthButton(type: AuthButtonType.register)),
+        SizedBox(width: 16),
+        Expanded(child: AuthButton(type: AuthButtonType.register)),
       ],
     );
   }

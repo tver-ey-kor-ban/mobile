@@ -51,7 +51,7 @@ class _BookingPageState extends State<BookingPage> {
   final dateController = TextEditingController();
   final timeController = TextEditingController();
 
-  final List<String> steps = ["រថយន្ត", "សេវាកម្ម", "ផ្ទៀងផ្ទាត់"];
+  final List<String> steps = ['រថយន្ត', 'សេវាកម្ម', 'ផ្ទៀងផ្ទាត់'];
 
   // Car selection
   SelectedCar? selectedCar;
@@ -80,14 +80,14 @@ class _BookingPageState extends State<BookingPage> {
     if (currentStep == 0) {
       if (selectedCar == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("សូមជ្រើសរើសរថយន្ត")),
+          const SnackBar(content: Text('សូមជ្រើសរើសរថយន្ត')),
         );
         return;
       }
     } else if (currentStep == 1) {
       if (selectedServices.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("សូមជ្រើសរើសសេវាកម្មយ៉ាងហោចណាស់មួយ")),
+          const SnackBar(content: Text('សូមជ្រើសរើសសេវាកម្មយ៉ាងហោចណាស់មួយ')),
         );
         return;
       }
@@ -133,12 +133,12 @@ class _BookingPageState extends State<BookingPage> {
   Widget build(BuildContext context) {
     if (!_authChecked) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.initialService ?? "ការកក់ទុក")),
+        appBar: AppBar(title: Text(widget.initialService ?? 'ការកក់ទុក')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.initialService ?? "ការកក់ទុក")),
+      appBar: AppBar(title: Text(widget.initialService ?? 'ការកក់ទុក')),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -156,7 +156,7 @@ class _BookingPageState extends State<BookingPage> {
                         ? Colors.red
                         : Colors.grey.shade300,
                     child: Text(
-                      "${index + 1}",
+                      '${index + 1}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -205,8 +205,7 @@ class _BookingPageState extends State<BookingPage> {
                       notes: notesController.text,
                     )
                   else
-                    const Center(
-                        child: Text('Please complete previous steps')),
+                    const Center(child: Text('Please complete previous steps')),
                 ],
               ),
             ),
@@ -222,7 +221,7 @@ class _BookingPageState extends State<BookingPage> {
                       backgroundColor: Colors.grey.shade200,
                       foregroundColor: Colors.black,
                     ),
-                    child: const Text("ត្រឡប់ក្រោយ"),
+                    child: const Text('ត្រឡប់ក្រោយ'),
                   )
                 else
                   const SizedBox
@@ -234,7 +233,7 @@ class _BookingPageState extends State<BookingPage> {
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                   ),
-                  child: Text(currentStep == 2 ? "បញ្ជាក់ការកក់" : "បន្ទាប់"),
+                  child: Text(currentStep == 2 ? 'បញ្ជាក់ការកក់' : 'បន្ទាប់'),
                 ),
               ],
             ),

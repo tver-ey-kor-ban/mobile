@@ -22,26 +22,26 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            HomeHeader(),
-            QuickActionFloatingCard(),
-            SectionHeader(title: "Our Services"),
-            ServicesGrid(),
-            SectionHeader(title: "Popular Services"),
+            const HomeHeader(),
+            const QuickActionFloatingCard(),
+            const SectionHeader(title: 'Our Services'),
+            const ServicesGrid(),
+            const SectionHeader(title: 'Popular Services'),
             const PopularServiceCard(
-              title: "Oil Change",
-              price: "25",
+              title: 'Oil Change',
+              price: '25',
               rating: 4.8,
               icon: Icons.opacity,
               gradientColors: [Colors.purple, Colors.deepPurple],
             ),
             const PopularServiceCard(
-              title: "New Tires",
-              price: "35",
+              title: 'New Tires',
+              price: '35',
               rating: 4.7,
               icon: Icons.tire_repair,
               gradientColors: [Colors.blue, Colors.lightBlue],
             ),
-            SectionHeader(title: "Featured Products"),
+            const SectionHeader(title: 'Featured Products'),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: SizedBox(
@@ -51,24 +51,24 @@ class HomePage extends StatelessWidget {
                   children: [
                     _buildSmallProduct(
                       context,
-                      "Synthetic Oil",
-                      "45",
+                      'Synthetic Oil',
+                      '45',
                       Icons.oil_barrel,
                       Colors.blue,
                     ),
                     const SizedBox(width: 15),
                     _buildSmallProduct(
                       context,
-                      "Air Filter",
-                      "25",
+                      'Air Filter',
+                      '25',
                       Icons.air,
                       Colors.green,
                     ),
                     const SizedBox(width: 15),
                     _buildSmallProduct(
                       context,
-                      "Brake Fluid",
-                      "15",
+                      'Brake Fluid',
+                      '15',
                       Icons.water_drop,
                       Colors.orange,
                     ),
@@ -76,8 +76,8 @@ class HomePage extends StatelessWidget {
                 ),
               ),
             ),
-            ContactInfoSection(),
-            ReadyToStartBanner(),
+            const ContactInfoSection(),
+            const ReadyToStartBanner(),
           ],
         ),
       ),
@@ -97,7 +97,7 @@ class HomePage extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => const ServicesListPage(
-              categoryName: "Car Products",
+              categoryName: 'Car Products',
               initialShowProducts: true,
             ),
           ),
@@ -124,7 +124,7 @@ class HomePage extends StatelessWidget {
               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
             ),
             Text(
-              "\$$price",
+              '\$$price',
               style: TextStyle(
                 color: color,
                 fontSize: 12,

@@ -8,9 +8,9 @@ class StatsSection extends StatelessWidget {
     return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _StatItem(value: "5000+", label: "Services"),
-        _StatItem(value: "50+", label: "Experts"),
-        _StatItem(value: "24/7", label: "Support"),
+        _StatItem(value: '5000+', label: 'Services'),
+        _StatItem(value: '50+', label: 'Experts'),
+        _StatItem(value: '24/7', label: 'Support'),
       ],
     );
   }

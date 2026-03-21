@@ -23,7 +23,7 @@ class CustomBottomNav extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                const ServicesListPage(categoryName: "All Services"),
+                const ServicesListPage(categoryName: 'All Services'),
           ),
         );
         break;

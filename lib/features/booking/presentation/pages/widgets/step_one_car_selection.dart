@@ -64,16 +64,19 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
             label: 'Car Brand',
             hint: 'Select Brand',
             value: selectedBrandId,
-            items: carBrands.map((brand) => DropdownMenuItem(
-              value: brand.id,
-              child: Row(
-                children: [
-                  Icon(Icons.directions_car, size: 20, color: Colors.red.shade700),
-                  const SizedBox(width: 12),
-                  Text(brand.name),
-                ],
-              ),
-            )).toList(),
+            items: carBrands
+                .map((brand) => DropdownMenuItem(
+                      value: brand.id,
+                      child: Row(
+                        children: [
+                          Icon(Icons.directions_car,
+                              size: 20, color: Colors.red.shade700),
+                          const SizedBox(width: 12),
+                          Text(brand.name),
+                        ],
+                      ),
+                    ))
+                .toList(),
             onChanged: (value) {
               setState(() {
                 selectedBrandId = value;
@@ -89,7 +92,8 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
           _buildDropdownCard(
             icon: Icons.model_training,
             label: 'Car Model',
-            hint: selectedBrandId == null ? 'Select Brand First' : 'Select Model',
+            hint:
+                selectedBrandId == null ? 'Select Brand First' : 'Select Model',
             value: selectedModelId,
             enabled: selectedBrandId != null,
             items: selectedBrandId != null
@@ -97,9 +101,9 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
                     .firstWhere((b) => b.id == selectedBrandId)
                     .models
                     .map((model) => DropdownMenuItem(
-                      value: model.id,
-                      child: Text(model.name),
-                    ))
+                          value: model.id,
+                          child: Text(model.name),
+                        ))
                     .toList()
                 : [],
             onChanged: (value) {
@@ -116,7 +120,9 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
           _buildDropdownCard(
             icon: Icons.settings,
             label: 'Engine Type',
-            hint: selectedModelId == null ? 'Select Model First' : 'Select Engine',
+            hint: selectedModelId == null
+                ? 'Select Model First'
+                : 'Select Engine',
             value: selectedEngine,
             enabled: selectedModelId != null,
             items: selectedModelId != null
@@ -126,9 +132,9 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
                     .firstWhere((m) => m.id == selectedModelId)
                     .engines
                     .map((engine) => DropdownMenuItem(
-                      value: engine,
-                      child: Text(engine),
-                    ))
+                          value: engine,
+                          child: Text(engine),
+                        ))
                     .toList()
                 : [],
             onChanged: (value) {
@@ -144,7 +150,8 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
           _buildDropdownCard(
             icon: Icons.calendar_today,
             label: 'Year',
-            hint: selectedEngine == null ? 'Select Engine First' : 'Select Year',
+            hint:
+                selectedEngine == null ? 'Select Engine First' : 'Select Year',
             value: selectedYear?.toString(),
             enabled: selectedEngine != null,
             items: selectedEngine != null
@@ -154,9 +161,9 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
                     .firstWhere((m) => m.id == selectedModelId)
                     .years
                     .map((year) => DropdownMenuItem(
-                      value: year.toString(),
-                      child: Text(year.toString()),
-                    ))
+                          value: year.toString(),
+                          child: Text(year.toString()),
+                        ))
                     .toList()
                 : [],
             onChanged: (value) {
@@ -226,7 +233,7 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
             child: DropdownButtonFormField<String>(
-              value: value,
+              initialValue: value,
               hint: Text(
                 hint,
                 style: TextStyle(color: Colors.grey.shade400),
@@ -236,7 +243,8 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
                 border: InputBorder.none,
                 filled: true,
                 fillColor: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 enabled: enabled,
               ),
               items: items,

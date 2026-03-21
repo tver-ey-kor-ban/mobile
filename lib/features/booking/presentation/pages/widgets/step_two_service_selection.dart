@@ -24,11 +24,11 @@ class StepTwoServiceSelection extends StatefulWidget {
 
 class _StepTwoServiceSelectionState extends State<StepTwoServiceSelection> {
   final List<ServiceOption> services = [
-    ServiceOption(name: "ប្តូរប្រេង SW-40", price: 55),
-    ServiceOption(name: "ប្តូរប្រេងប្រអប់លេខ (Dexron III)", price: 60),
-    ServiceOption(name: "ប្តូរប្រេងម៉ាស៊ីន", price: 13),
-    ServiceOption(name: "ប្តូរត្រង DotsJoost", price: 15),
-    ServiceOption(name: "ជួសជុល", price: 46),
+    ServiceOption(name: 'ប្តូរប្រេង SW-40', price: 55),
+    ServiceOption(name: 'ប្តូរប្រេងប្រអប់លេខ (Dexron III)', price: 60),
+    ServiceOption(name: 'ប្តូរប្រេងម៉ាស៊ីន', price: 13),
+    ServiceOption(name: 'ប្តូរត្រង DotsJoost', price: 15),
+    ServiceOption(name: 'ជួសជុល', price: 46),
   ];
 
   void _toggleService(int index) {
@@ -36,12 +36,12 @@ class _StepTwoServiceSelectionState extends State<StepTwoServiceSelection> {
       services[index].isSelected = !services[index].isSelected;
 
       // 1. Calculate the new total
-      double total = services
+      final double total = services
           .where((s) => s.isSelected)
           .fold(0, (sum, s) => sum + s.price);
 
       // 2. Create the list of selected names
-      List<String> selectedNames =
+      final List<String> selectedNames =
           services.where((s) => s.isSelected).map((s) => s.name).toList();
 
       // 3. Send both back to BookingPage
@@ -70,7 +70,7 @@ class _StepTwoServiceSelectionState extends State<StepTwoServiceSelection> {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             secondary: Text(
-              "\$${services[index].price.toInt()}",
+              '\$${services[index].price.toInt()}',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.red,
