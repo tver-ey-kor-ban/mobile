@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../auth/presentation/pages/login_page.dart' as login;
+import '../../../../shared/services/auth_service.dart';
 import 'widgets/step_one_user_info.dart';
 import 'widgets/step_two_service_selection.dart';
 import 'widgets/step_three_summary.dart';
@@ -16,6 +19,29 @@ class _BookingPageState extends State<BookingPage> {
   double total = 0.0;
   List<String> selectedServiceNames =
       []; // 1. Added dynamic state for selected services
+  bool _authChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check auth after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuth();
+    });
+  }
+
+  void _checkAuth() async {
+    final auth = context.read<AuthService>();
+    if (!auth.isAuthenticated) {
+      await login.showLoginModal(context);
+      if (!auth.isAuthenticated && mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+    setState(() {
+      _authChecked = true;
+    });
+  }
 
   // Controllers for Step 1
   final nameController = TextEditingController();
@@ -64,6 +90,14 @@ class _BookingPageState extends State<BookingPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_authChecked) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.initialService ?? "ការកក់ទុក")),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: Text(widget.initialService ?? "ការកក់ទុក")),
       body: Padding(

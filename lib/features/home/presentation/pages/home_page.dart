@@ -29,7 +29,6 @@ class HomePage extends StatelessWidget {
             ServicesGrid(),
 
             SectionHeader(title: "Popular Services"),
-            // Map your service data here
             const PopularServiceCard(
               title: "Oil Change",
               price: "25",
