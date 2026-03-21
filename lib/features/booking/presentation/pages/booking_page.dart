@@ -142,9 +142,9 @@ class _BookingPageState extends State<BookingPage> {
                     // Update this callback to receive both the total and the list
                     onSelectionChanged: (newTotal, selectedList) =>
                         setState(() {
-                          total = newTotal;
-                          selectedServiceNames = selectedList;
-                        }),
+                      total = newTotal;
+                      selectedServiceNames = selectedList;
+                    }),
                   ),
                   StepThreeSummary(
                     userName: nameController.text,
@@ -173,7 +173,8 @@ class _BookingPageState extends State<BookingPage> {
                     child: const Text("ត្រឡប់ក្រោយ"),
                   )
                 else
-                  const SizedBox.shrink(), // Keeps the "Next" button aligned right on Step 1
+                  const SizedBox
+                      .shrink(), // Keeps the "Next" button aligned right on Step 1
 
                 ElevatedButton(
                   onPressed: _nextStep,

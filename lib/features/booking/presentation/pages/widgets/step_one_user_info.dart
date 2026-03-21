@@ -25,21 +25,18 @@ class StepOneUserInfo extends StatelessWidget {
         ),
         const Text("បញ្ចូលព័ត៌មានផ្ទាល់ខ្លួនរបស់អ្នក"),
         const SizedBox(height: 20),
-
         _buildTextField(
           label: "ឈ្មោះ-ត្រកូល *",
           icon: Icons.person,
           controller: nameController,
         ),
         const SizedBox(height: 15),
-
         _buildTextField(
           label: "លេខទូរស័ព្ទ *",
           icon: Icons.phone,
           controller: phoneController,
         ),
         const SizedBox(height: 15),
-
         Row(
           children: [
             Expanded(

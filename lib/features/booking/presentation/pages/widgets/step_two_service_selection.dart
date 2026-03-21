@@ -41,10 +41,8 @@ class _StepTwoServiceSelectionState extends State<StepTwoServiceSelection> {
           .fold(0, (sum, s) => sum + s.price);
 
       // 2. Create the list of selected names
-      List<String> selectedNames = services
-          .where((s) => s.isSelected)
-          .map((s) => s.name)
-          .toList();
+      List<String> selectedNames =
+          services.where((s) => s.isSelected).map((s) => s.name).toList();
 
       // 3. Send both back to BookingPage
       widget.onSelectionChanged(total, selectedNames);

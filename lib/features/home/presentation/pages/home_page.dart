@@ -24,10 +24,8 @@ class HomePage extends StatelessWidget {
           children: [
             HomeHeader(),
             QuickActionFloatingCard(),
-
             SectionHeader(title: "Our Services"),
             ServicesGrid(),
-
             SectionHeader(title: "Popular Services"),
             const PopularServiceCard(
               title: "Oil Change",
@@ -43,7 +41,6 @@ class HomePage extends StatelessWidget {
               icon: Icons.tire_repair,
               gradientColors: [Colors.blue, Colors.lightBlue],
             ),
-
             SectionHeader(title: "Featured Products"),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -79,7 +76,6 @@ class HomePage extends StatelessWidget {
                 ),
               ),
             ),
-
             ContactInfoSection(),
             ReadyToStartBanner(),
           ],
