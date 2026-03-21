@@ -17,7 +17,7 @@ class ReadyToStartBanner extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withValues(alpha: 0.3),
+            color: Colors.red.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),

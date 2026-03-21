@@ -30,7 +30,7 @@ class PopularServiceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -57,7 +57,7 @@ class PopularServiceCard extends StatelessWidget {
                 child: Center(
                   child: Icon(
                     icon,
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: Colors.white.withOpacity(0.9),
                     size: 60,
                   ),
                 ),
@@ -71,7 +71,7 @@ class PopularServiceCard extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.9),
+                    color: Colors.red.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
