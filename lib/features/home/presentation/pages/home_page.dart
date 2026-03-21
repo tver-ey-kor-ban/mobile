@@ -44,7 +44,6 @@ class HomePage extends StatelessWidget {
               gradientColors: [Colors.blue, Colors.lightBlue],
             ),
 
-
             SectionHeader(title: "Featured Products"),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
