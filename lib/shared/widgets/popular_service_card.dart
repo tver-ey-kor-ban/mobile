@@ -18,7 +18,7 @@ class PopularServiceCard extends StatelessWidget {
     this.reviewCount = 100,
     required this.gradientColors,
     required this.icon,
-    this.tag = "Popular",
+    this.tag = 'Popular',
   });
 
   @override
@@ -66,8 +66,10 @@ class PopularServiceCard extends StatelessWidget {
                 top: 15,
                 left: 15,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(20),
@@ -103,7 +105,7 @@ class PopularServiceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "SERVICE",
+                  'SERVICE',
                   style: TextStyle(
                     color: Colors.grey,
                     fontSize: 10,
@@ -132,7 +134,7 @@ class PopularServiceCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      "$rating ($reviewCount reviews)",
+                      '$rating ($reviewCount reviews)',
                       style: TextStyle(
                         color: Colors.grey.shade600,
                         fontSize: 13,
@@ -148,11 +150,11 @@ class PopularServiceCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "Starting from",
+                          'Starting from',
                           style: TextStyle(color: Colors.grey, fontSize: 11),
                         ),
                         Text(
-                          "\$$price",
+                          '\$$price',
                           style: const TextStyle(
                             color: Colors.deepOrange,
                             fontWeight: FontWeight.bold,
@@ -182,7 +184,7 @@ class PopularServiceCard extends StatelessWidget {
                         ),
                       ),
                       child: const Text(
-                        "Book Now",
+                        'Book Now',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),

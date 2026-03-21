@@ -52,10 +52,7 @@ class ProfilePage extends StatelessWidget {
             // Title
             const Text(
               'Welcome!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
 
@@ -63,10 +60,7 @@ class ProfilePage extends StatelessWidget {
             Text(
               'Sign in to access your profile and\nmanage your bookings',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 32),
 
@@ -85,10 +79,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 child: const Text(
                   'Sign In',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -101,7 +92,7 @@ class ProfilePage extends StatelessWidget {
                 onPressed: () => register.showRegisterModal(context),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.red.shade700,
-                  side: BorderSide(color: Colors.red.shade700!),
+                  side: BorderSide(color: Colors.red.shade700),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -109,10 +100,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 child: const Text(
                   'Create Account',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -132,7 +120,7 @@ class ProfilePage extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.red.shade700!, Colors.red.shade400!],
+                colors: [Colors.red.shade700, Colors.red.shade400],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -233,14 +221,16 @@ class ProfilePage extends StatelessWidget {
                     onPressed: () {
                       auth.logout();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Logged out successfully')),
+                        const SnackBar(
+                          content: Text('Logged out successfully'),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.logout),
                     label: const Text('Log Out'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red.shade700,
-                      side: BorderSide(color: Colors.red.shade700!),
+                      side: BorderSide(color: Colors.red.shade700),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

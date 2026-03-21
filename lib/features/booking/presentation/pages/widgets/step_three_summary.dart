@@ -24,7 +24,7 @@ class StepThreeSummary extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "ផ្ទៀងផ្ទាត់ការកក់",
+          'ផ្ទៀងផ្ទាត់ការកក់',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 15),
@@ -41,14 +41,14 @@ class StepThreeSummary extends StatelessWidget {
               children: [
                 _buildInfoRow(Icons.person, userName),
                 _buildInfoRow(Icons.phone, phone),
-                _buildInfoRow(Icons.calendar_today, "$date - $time"),
+                _buildInfoRow(Icons.calendar_today, '$date - $time'),
                 const Divider(),
                 ...selectedServices.map(
                   (service) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [Text(service), const Text("Selected")],
+                      children: [Text(service), const Text('Selected')],
                     ),
                   ),
                 ),
@@ -69,11 +69,11 @@ class StepThreeSummary extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "សរុប",
+                'សរុប',
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
               Text(
-                "\$$total",
+                '\$$total',
                 style: const TextStyle(
                   color: Colors.orange,
                   fontSize: 20,

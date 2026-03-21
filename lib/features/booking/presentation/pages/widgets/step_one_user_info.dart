@@ -20,31 +20,28 @@ class StepOneUserInfo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "ព័ត៌មានអតិថិជន",
+          'ព័ត៌មានអតិថិជន',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        const Text("បញ្ចូលព័ត៌មានផ្ទាល់ខ្លួនរបស់អ្នក"),
+        const Text('បញ្ចូលព័ត៌មានផ្ទាល់ខ្លួនរបស់អ្នក'),
         const SizedBox(height: 20),
-
         _buildTextField(
-          label: "ឈ្មោះ-ត្រកូល *",
+          label: 'ឈ្មោះ-ត្រកូល *',
           icon: Icons.person,
           controller: nameController,
         ),
         const SizedBox(height: 15),
-
         _buildTextField(
-          label: "លេខទូរស័ព្ទ *",
+          label: 'លេខទូរស័ព្ទ *',
           icon: Icons.phone,
           controller: phoneController,
         ),
         const SizedBox(height: 15),
-
         Row(
           children: [
             Expanded(
               child: _buildTextField(
-                label: "ថ្ងៃខែ *",
+                label: 'ថ្ងៃខែ *',
                 icon: Icons.calendar_today,
                 controller: dateController,
               ),
@@ -52,7 +49,7 @@ class StepOneUserInfo extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _buildTextField(
-                label: "ម៉ោង *",
+                label: 'ម៉ោង *',
                 icon: Icons.access_time,
                 controller: timeController,
               ),

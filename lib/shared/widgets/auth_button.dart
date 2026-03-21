@@ -37,9 +37,7 @@ class AuthButton extends StatelessWidget {
         backgroundColor: Colors.red.shade700,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
       ),
       child: Text(_getLabel()),
@@ -144,20 +142,13 @@ class AuthButtonsRow extends StatelessWidget {
   }
 
   Widget _buildAuthButtons(BuildContext context) {
-    return Row(
+    return const Row(
       children: [
         Expanded(
-          child: AuthButton(
-            type: AuthButtonType.login,
-            isOutlined: true,
-          ),
+          child: AuthButton(type: AuthButtonType.login, isOutlined: true),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: const AuthButton(
-            type: AuthButtonType.register,
-          ),
-        ),
+        SizedBox(width: 16),
+        Expanded(child: AuthButton(type: AuthButtonType.register)),
       ],
     );
   }

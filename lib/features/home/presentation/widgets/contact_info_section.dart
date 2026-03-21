@@ -17,14 +17,14 @@ class ContactInfoSection extends StatelessWidget {
           const ListTile(
             leading: Icon(Icons.phone, color: Colors.white70),
             title: Text(
-              "+855 88 888 151",
+              '+855 88 888 151',
               style: TextStyle(color: Colors.white),
             ),
           ),
           const ListTile(
             leading: Icon(Icons.calendar_today, color: Colors.white70),
             title: Text(
-              "ច័ន្ទ - ព្រហស្បតិ៍: 7:30 - 6:00",
+              'ច័ន្ទ - ព្រហស្បតិ៍: 7:30 - 6:00',
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -35,7 +35,7 @@ class ContactInfoSection extends StatelessWidget {
               foregroundColor: Colors.black,
               minimumSize: const Size(double.infinity, 45),
             ),
-            child: const Text("ទាក់ទងមកយើង"),
+            child: const Text('ទាក់ទងមកយើង'),
           ),
         ],
       ),

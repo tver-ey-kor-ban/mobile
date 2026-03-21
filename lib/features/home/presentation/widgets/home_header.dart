@@ -27,7 +27,7 @@ class HomeHeader extends StatelessWidget {
 
           // 2. Khmer Title Text
           const Text(
-            "សេវាកម្ម\nដែលទុកចិត្ត",
+            'សេវាកម្ម\nដែលទុកចិត្ត',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,
@@ -42,9 +42,9 @@ class HomeHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statItem("5000+", "អតិថិជន"),
-              _statItem("50+", "អ្នកជំនាញ"),
-              _statItem("24/7", "គាំទ្រ"),
+              _statItem('5000+', 'អតិថិជន'),
+              _statItem('50+', 'អ្នកជំនាញ'),
+              _statItem('24/7', 'គាំទ្រ'),
             ],
           ),
         ],
@@ -86,7 +86,7 @@ class HomeHeader extends StatelessWidget {
           Icon(Icons.stars, color: Colors.orange, size: 16),
           SizedBox(width: 4),
           Text(
-            "Premium Car Care Service",
+            'Premium Car Care Service',
             style: TextStyle(color: Colors.white, fontSize: 12),
           ),
         ],

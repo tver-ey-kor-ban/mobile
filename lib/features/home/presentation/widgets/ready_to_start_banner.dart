@@ -28,7 +28,7 @@ class ReadyToStartBanner extends StatelessWidget {
           const Icon(Icons.auto_awesome, color: Colors.white, size: 40),
           const SizedBox(height: 12),
           const Text(
-            "តើអ្នករួចរាល់ហើយឬនៅ?",
+            'តើអ្នករួចរាល់ហើយឬនៅ?',
             style: TextStyle(
               color: Colors.white,
               fontSize: 22,
@@ -37,7 +37,7 @@ class ReadyToStartBanner extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            "Ready to Start Your Service?",
+            'Ready to Start Your Service?',
             style: TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 20),
@@ -54,7 +54,7 @@ class ReadyToStartBanner extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
             ),
             child: const Text(
-              "Get Started Now",
+              'Get Started Now',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),

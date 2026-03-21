@@ -180,39 +180,39 @@ class StepThreeConfirmation extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ...selectedServices.map((service) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      service.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                      ),
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          service.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _formatDuration(service.estimatedTime),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _formatDuration(service.estimatedTime),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade500,
-                      ),
+                  ),
+                  Text(
+                    '\$${service.price.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Text(
-                '\$${service.price.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        )),
+            )),
         const Divider(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

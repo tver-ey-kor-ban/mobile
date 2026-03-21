@@ -29,9 +29,9 @@ class QuickActionFloatingCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildItem(Icons.calendar_month, "ការកក់ទុក", Colors.orange),
-            _buildItem(Icons.analytics, "ប្រតិបត្តិការ", Colors.indigo),
-            _buildItem(Icons.description, "វិក្កយបត្រ", Colors.blueGrey),
+            _buildItem(Icons.calendar_month, 'ការកក់ទុក', Colors.orange),
+            _buildItem(Icons.analytics, 'ប្រតិបត្តិការ', Colors.indigo),
+            _buildItem(Icons.description, 'វិក្កយបត្រ', Colors.blueGrey),
           ],
         ),
       ),

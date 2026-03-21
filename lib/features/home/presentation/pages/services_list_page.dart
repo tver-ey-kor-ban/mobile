@@ -76,7 +76,7 @@ class _ServicesListPageState extends State<ServicesListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(showProducts ? "Car Products" : widget.categoryName),
+        title: Text(showProducts ? 'Car Products' : widget.categoryName),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -99,13 +99,13 @@ class _ServicesListPageState extends State<ServicesListPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CustomChip(
-                  label: "Services",
+                  label: 'Services',
                   isSelected: !showProducts,
                   onTap: () => setState(() => showProducts = false),
                 ),
                 const SizedBox(width: 20),
                 CustomChip(
-                  label: "Products",
+                  label: 'Products',
                   isSelected: showProducts,
                   onTap: () => setState(() => showProducts = true),
                 ),
@@ -133,7 +133,7 @@ class _ServicesListPageState extends State<ServicesListPage> {
           rating: service['rating'] as double,
           icon: service['icon'] as IconData,
           gradientColors: service['colors'] as List<Color>,
-          tag: index == 0 ? "Best Seller" : "Recommended",
+          tag: index == 0 ? 'Best Seller' : 'Recommended',
         );
       },
     );
