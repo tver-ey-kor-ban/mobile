@@ -11,11 +11,7 @@ class AuthService extends ChangeNotifier {
   String? get userEmail => _userEmail;
   String? get userPhone => _userPhone;
 
-  void login({
-    required String name,
-    required String email,
-    String? phone,
-  }) {
+  void login({required String name, required String email, String? phone}) {
     _isAuthenticated = true;
     _userName = name;
     _userEmail = email;
@@ -31,10 +27,7 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateProfile({
-    String? name,
-    String? phone,
-  }) {
+  void updateProfile({String? name, String? phone}) {
     if (name != null) _userName = name;
     if (phone != null) _userPhone = phone;
     notifyListeners();

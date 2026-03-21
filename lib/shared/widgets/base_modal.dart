@@ -23,9 +23,7 @@ class BaseModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 0,
       backgroundColor: Colors.transparent,
       child: Container(
@@ -80,10 +78,7 @@ class BaseModal extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     subtitle!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
                 ],
               ],
@@ -104,11 +99,7 @@ class BaseModal extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.close,
-                  size: 20,
-                  color: Colors.black54,
-                ),
+                child: const Icon(Icons.close, size: 20, color: Colors.black54),
               ),
             ),
         ],

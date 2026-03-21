@@ -44,7 +44,6 @@ class HomePage extends StatelessWidget {
               gradientColors: [Colors.blue, Colors.lightBlue],
             ),
 
-
             SectionHeader(title: "Featured Products"),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -53,11 +52,29 @@ class HomePage extends StatelessWidget {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _buildSmallProduct(context, "Synthetic Oil", "45", Icons.oil_barrel, Colors.blue),
+                    _buildSmallProduct(
+                      context,
+                      "Synthetic Oil",
+                      "45",
+                      Icons.oil_barrel,
+                      Colors.blue,
+                    ),
                     const SizedBox(width: 15),
-                    _buildSmallProduct(context, "Air Filter", "25", Icons.air, Colors.green),
+                    _buildSmallProduct(
+                      context,
+                      "Air Filter",
+                      "25",
+                      Icons.air,
+                      Colors.green,
+                    ),
                     const SizedBox(width: 15),
-                    _buildSmallProduct(context, "Brake Fluid", "15", Icons.water_drop, Colors.orange),
+                    _buildSmallProduct(
+                      context,
+                      "Brake Fluid",
+                      "15",
+                      Icons.water_drop,
+                      Colors.orange,
+                    ),
                   ],
                 ),
               ),
@@ -71,7 +88,13 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSmallProduct(BuildContext context, String name, String price, IconData icon, Color color) {
+  Widget _buildSmallProduct(
+    BuildContext context,
+    String name,
+    String price,
+    IconData icon,
+    Color color,
+  ) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -106,7 +129,11 @@ class HomePage extends StatelessWidget {
             ),
             Text(
               "\$$price",
-              style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

@@ -9,11 +9,7 @@ class AuthGuard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onAuthenticated;
 
-  const AuthGuard({
-    super.key,
-    required this.child,
-    this.onAuthenticated,
-  });
+  const AuthGuard({super.key, required this.child, this.onAuthenticated});
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +28,7 @@ class AuthGuard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.lock_outline,
-            size: 64,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.lock_outline, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             'Authentication Required',
@@ -49,10 +41,7 @@ class AuthGuard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Please sign in to access this feature',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade500,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -83,7 +72,7 @@ class AuthGuard extends StatelessWidget {
 /// Returns true if authenticated (either already or after login), false otherwise
 Future<bool> checkAuthAndShowLogin(BuildContext context) async {
   final auth = context.read<AuthService>();
-  
+
   if (auth.isAuthenticated) {
     return true;
   }
@@ -106,7 +95,7 @@ Future<void> requireAuth(
   }
 
   await login.showLoginModal(context);
-  
+
   // Check again after login modal closes
   if (context.mounted && auth.isAuthenticated) {
     onAuthenticated();

@@ -84,9 +84,7 @@ class _RegisterPageState extends State<RegisterPage> {
         labelText: 'Full Name',
         hintText: 'Enter your full name',
         prefixIcon: const Icon(Icons.person_outlined),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -112,9 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
         labelText: 'Email',
         hintText: 'Enter your email',
         prefixIcon: const Icon(Icons.email_outlined),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -140,9 +136,7 @@ class _RegisterPageState extends State<RegisterPage> {
         labelText: 'Phone Number',
         hintText: 'Enter your phone number',
         prefixIcon: const Icon(Icons.phone_outlined),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -178,9 +172,7 @@ class _RegisterPageState extends State<RegisterPage> {
             });
           },
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -216,9 +208,7 @@ class _RegisterPageState extends State<RegisterPage> {
             });
           },
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -267,10 +257,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-              Text(
-                ' and ',
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
+              Text(' and ', style: TextStyle(color: Colors.grey.shade600)),
               GestureDetector(
                 onTap: () {
                   // TODO: Show privacy policy
@@ -298,17 +285,12 @@ class _RegisterPageState extends State<RegisterPage> {
         foregroundColor: Colors.white,
         disabledBackgroundColor: Colors.grey.shade300,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
       ),
       child: const Text(
         'Create Account',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -321,10 +303,7 @@ class _RegisterPageState extends State<RegisterPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Or sign up with',
-            style: TextStyle(
-              color: Colors.grey.shade500,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
           ),
         ),
         Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -410,9 +389,9 @@ class _RegisterPageState extends State<RegisterPage> {
         phone: _phoneController.text,
       );
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registration successful!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Registration successful!')));
     }
   }
 }

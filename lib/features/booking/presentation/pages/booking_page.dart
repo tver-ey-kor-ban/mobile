@@ -93,9 +93,7 @@ class _BookingPageState extends State<BookingPage> {
     if (!_authChecked) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.initialService ?? "ការកក់ទុក")),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     return Scaffold(

@@ -66,8 +66,10 @@ class PopularServiceCard extends StatelessWidget {
                 top: 15,
                 left: 15,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(20),
