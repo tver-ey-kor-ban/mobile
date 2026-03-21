@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../auth/presentation/pages/login_page.dart' as login;
 import '../../../../shared/services/auth_service.dart';
-import 'widgets/step_one_user_info.dart';
-import 'widgets/step_two_service_selection.dart';
-import 'widgets/step_three_summary.dart';
+import '../../domain/models/car_model.dart';
+import '../../domain/models/service_model.dart';
+import 'widgets/step_one_car_selection.dart';
+import 'widgets/step_two_car_services.dart';
+import 'widgets/step_three_confirmation.dart';
 
 class BookingPage extends StatefulWidget {
   final String? initialService;
@@ -49,30 +51,41 @@ class _BookingPageState extends State<BookingPage> {
   final dateController = TextEditingController();
   final timeController = TextEditingController();
 
-  final List<String> steps = ["ព័ត៌មាន", "សេវាកម្ម", "ផ្ទៀងផ្ទាត់"];
+  final List<String> steps = ["រថយន្ត", "សេវាកម្ម", "ផ្ទៀងផ្ទាត់"];
 
-  // 2. Always clean up controllers to prevent memory leaks on your machine!
+  // Car selection
+  SelectedCar? selectedCar;
+
+  // Service selection
+  List<CarService> selectedServices = [];
+  double totalPrice = 0.0;
+
+  // Appointment details
+  DateTime? selectedDate;
+  TimeOfDay? selectedTime;
+  final notesController = TextEditingController();
+
   @override
   void dispose() {
     nameController.dispose();
     phoneController.dispose();
     dateController.dispose();
     timeController.dispose();
+    notesController.dispose();
     super.dispose();
   }
 
   // 3. Extracted navigation logic for cleaner code and validation
   void _nextStep() {
     if (currentStep == 0) {
-      if (nameController.text.trim().isEmpty ||
-          phoneController.text.trim().isEmpty) {
+      if (selectedCar == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("សូមបំពេញឈ្មោះ និងលេខទូរស័ព្ទ")),
+          const SnackBar(content: Text("សូមជ្រើសរើសរថយន្ត")),
         );
-        return; // Stops here if validation fails
+        return;
       }
     } else if (currentStep == 1) {
-      if (selectedServiceNames.isEmpty) {
+      if (selectedServices.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("សូមជ្រើសរើសសេវាកម្មយ៉ាងហោចណាស់មួយ")),
         );
@@ -84,8 +97,36 @@ class _BookingPageState extends State<BookingPage> {
       setState(() => currentStep++);
     } else {
       // Final Submit Logic
-      debugPrint("Submit Booking to FastAPI backend!");
+      _submitBooking();
     }
+  }
+
+  void _submitBooking() {
+    // TODO: Submit booking to backend
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Booking Confirmed!'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Vehicle: ${selectedCar!.displayName}'),
+            Text('Services: ${selectedServices.length} selected'),
+            Text('Total: \$${totalPrice.toStringAsFixed(2)}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -132,29 +173,40 @@ class _BookingPageState extends State<BookingPage> {
               child: IndexedStack(
                 index: currentStep,
                 children: [
-                  StepOneUserInfo(
-                    nameController: nameController,
-                    phoneController: phoneController,
-                    dateController: dateController,
-                    timeController: timeController,
+                  StepOneCarSelection(
+                    onCarSelected: (car) {
+                      setState(() {
+                        selectedCar = car;
+                      });
+                    },
+                    initialCar: selectedCar,
                   ),
-                  StepTwoServiceSelection(
-                    // Update this callback to receive both the total and the list
-                    onSelectionChanged: (newTotal, selectedList) =>
+                  if (selectedCar != null)
+                    StepTwoCarServices(
+                      selectedCar: selectedCar!,
+                      onServicesSelected: (services, total) {
                         setState(() {
-                      total = newTotal;
-                      selectedServiceNames = selectedList;
-                    }),
-                  ),
-                  StepThreeSummary(
-                    userName: nameController.text,
-                    phone: phoneController.text,
-                    date: dateController.text,
-                    time: timeController.text,
-                    selectedServices:
-                        selectedServiceNames, // 5. Now perfectly dynamic!
-                    total: total,
-                  ),
+                          selectedServices = services;
+                          totalPrice = total;
+                        });
+                      },
+                      initiallySelectedServiceIds:
+                          selectedServices.map((s) => s.id).toList(),
+                    )
+                  else
+                    const Center(child: Text('Please select a car first')),
+                  if (selectedCar != null && selectedServices.isNotEmpty)
+                    StepThreeConfirmation(
+                      selectedCar: selectedCar!,
+                      selectedServices: selectedServices,
+                      totalPrice: totalPrice,
+                      selectedDate: selectedDate,
+                      selectedTime: selectedTime,
+                      notes: notesController.text,
+                    )
+                  else
+                    const Center(
+                        child: Text('Please complete previous steps')),
                 ],
               ),
             ),
