@@ -18,7 +18,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.0'
           channel: 'stable'
           cache: true
 
@@ -61,7 +61,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.0'
           channel: 'stable'
           cache: true
 
@@ -77,5 +77,14 @@ jobs:
       - name: Build APK (Debug)
         run: flutter build apk --debug
 
-# run check
-# dart format . ; flutter analyze ; flutter test
+# # 1. Get dependencies
+# flutter pub get
+
+# # 2. Analyze code (only fails on errors, not info/warnings)
+# flutter analyze --no-fatal-infos --no-fatal-warnings
+
+# # 3. Run tests
+# flutter test
+
+# # 4. Build Android APK (optional)
+# flutter build apk --debug
