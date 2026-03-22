@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/features/home/presentation/pages/services_list_page.dart';
 import 'package:my_app/features/home/presentation/pages/home_page.dart';
+import 'package:my_app/features/profile/presentation/pages/profile_page.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -26,7 +27,16 @@ class CustomBottomNav extends StatelessWidget {
           ),
         );
         break;
-      // Activity and Profile could be added here later
+      case 2:
+        // Activity - can be added later
+        break;
+      case 3:
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
+          (route) => false,
+        );
+        break;
     }
   }
 
