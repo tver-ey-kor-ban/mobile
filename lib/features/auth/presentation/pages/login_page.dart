@@ -13,13 +13,13 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 8),
-            _buildEmailField(),
+            _buildUsernameField(),
             const SizedBox(height: 16),
             _buildPasswordField(),
             const SizedBox(height: 8),
@@ -61,14 +61,14 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildEmailField() {
+  Widget _buildUsernameField() {
     return TextFormField(
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
+      controller: _usernameController,
+      keyboardType: TextInputType.text,
       decoration: InputDecoration(
-        labelText: 'Email',
-        hintText: 'Enter your email',
-        prefixIcon: const Icon(Icons.email_outlined),
+        labelText: 'Username',
+        hintText: 'Enter your username',
+        prefixIcon: const Icon(Icons.person_outline),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -77,10 +77,10 @@ class _LoginPageState extends State<LoginPage> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter your email';
+          return 'Please enter your username';
         }
-        if (!value.contains('@')) {
-          return 'Please enter a valid email';
+        if (value.length < 3) {
+          return 'Username must be at least 3 characters';
         }
         return null;
       },
@@ -248,8 +248,8 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       final auth = context.read<AuthService>();
       auth.login(
-        name: _emailController.text.split('@').first,
-        email: _emailController.text,
+        name: _usernameController.text,
+        email: _usernameController.text,
       );
       Navigator.of(context).pop();
       ScaffoldMessenger.of(
