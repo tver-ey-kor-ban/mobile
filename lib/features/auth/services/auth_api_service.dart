@@ -70,7 +70,7 @@ class AuthApiService {
   /// Get current authenticated user
   /// GET /api/v1/auth/me
   Future<UserResponse> getCurrentUser() async {
-    final response = await _apiClient.get(ApiConstants.me);
+    final response = await _apiClient.get(ApiConstants.currentUser);
 
     if (response.isSuccess) {
       return UserResponse.fromJson(response.data);

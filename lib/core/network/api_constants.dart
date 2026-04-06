@@ -1,24 +1,32 @@
+/// API Constants for the application
 class ApiConstants {
+  /// Base URL for the backend API
   static const String baseUrl = 'https://backend-1-qgqd.onrender.com';
+
+  /// API Version
   static const String apiVersion = '/api/v1';
 
-  // Auth endpoints
+  // Auth Endpoints
   static const String login = '$apiVersion/auth/login';
   static const String register = '$apiVersion/auth/register';
   static const String refreshToken = '$apiVersion/auth/refresh';
-  static const String logout = '$apiVersion/auth/logout';
-  static const String me = '$apiVersion/auth/me';
+  static const String currentUser = '$apiVersion/auth/me';
 
-  // Booking endpoints
+  // Booking Endpoints
   static const String productOrders = '$apiVersion/product-orders';
   static const String unifiedBooking =
       '$apiVersion/product-orders/unified-booking';
 
-  // Service endpoints
-  static const String services = '$apiVersion/services';
-  static const String shops = '$apiVersion/shops';
+  // Search Endpoints
+  static const String searchByImage = '$apiVersion/search/image';
+  static const String searchProducts = '$apiVersion/products/search';
 
-  // Vehicle endpoints
-  static const String vehicles = '$apiVersion/vehicles';
+  // Shop Endpoints
+  static const String shops = '$apiVersion/shops';
+  static const String shopDetails = '$apiVersion/shops/';
+
+  // Vehicle Endpoints
   static const String customerVehicles = '$apiVersion/customer-vehicles';
+  static const String vehicleMakes = '$apiVersion/vehicles/makes';
+  static const String vehicleModels = '$apiVersion/vehicles/models';
 }

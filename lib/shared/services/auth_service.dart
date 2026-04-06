@@ -2,17 +2,24 @@ import 'package:flutter/foundation.dart';
 
 class AuthService extends ChangeNotifier {
   bool _isAuthenticated = false;
+  String? _token;
   String? _userName;
   String? _userEmail;
   String? _userPhone;
 
   bool get isAuthenticated => _isAuthenticated;
+  String? get token => _token;
   String? get userName => _userName;
   String? get userEmail => _userEmail;
   String? get userPhone => _userPhone;
 
-  void login({required String name, required String email, String? phone}) {
+  void login(
+      {required String name,
+      required String email,
+      String? phone,
+      String? token}) {
     _isAuthenticated = true;
+    _token = token;
     _userName = name;
     _userEmail = email;
     _userPhone = phone;
@@ -21,6 +28,7 @@ class AuthService extends ChangeNotifier {
 
   void logout() {
     _isAuthenticated = false;
+    _token = null;
     _userName = null;
     _userEmail = null;
     _userPhone = null;
