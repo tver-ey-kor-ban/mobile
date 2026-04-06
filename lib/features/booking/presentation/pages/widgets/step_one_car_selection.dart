@@ -233,7 +233,7 @@ class _StepOneCarSelectionState extends State<StepOneCarSelection> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
             child: DropdownButtonFormField<String>(
-              value: value,
+              initialValue: value,
               hint: Text(
                 hint,
                 style: TextStyle(color: Colors.grey.shade400),
