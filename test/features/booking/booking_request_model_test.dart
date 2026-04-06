@@ -45,8 +45,8 @@ void main() {
     });
 
     test('toJson formats dates correctly', () {
-      final appointmentDate = DateTime(2026, 4, 10, 10, 30);
-      final pickupDate = DateTime(2026, 4, 10, 14, 0);
+      final appointmentDate = DateTime.utc(2026, 4, 10, 10, 30);
+      final pickupDate = DateTime.utc(2026, 4, 10, 14, 0);
 
       final request = UnifiedBookingRequest(
         shopId: 1,
@@ -56,8 +56,8 @@ void main() {
 
       final json = request.toJson();
 
-      expect(json['appointment_date'], '2026-04-10T03:30:00.000Z');
-      expect(json['pickup_date'], '2026-04-10T07:00:00.000Z');
+      expect(json['appointment_date'], '2026-04-10T10:30:00.000Z');
+      expect(json['pickup_date'], '2026-04-10T14:00:00.000Z');
     });
 
     test('productItems defaults to empty list', () {
