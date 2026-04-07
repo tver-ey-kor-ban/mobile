@@ -13,13 +13,16 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+  String? _usernameError;
+  String? _passwordError;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -42,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 8),
-            _buildEmailField(),
+            _buildUsernameField(),
             const SizedBox(height: 16),
             _buildPasswordField(),
             const SizedBox(height: 8),
@@ -61,26 +64,42 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildEmailField() {
+  Widget _buildUsernameField() {
     return TextFormField(
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
+      controller: _usernameController,
+      keyboardType: TextInputType.text,
+      onChanged: (_) {
+        if (_usernameError != null) {
+          setState(() {
+            _usernameError = null;
+          });
+        }
+      },
       decoration: InputDecoration(
-        labelText: 'Email',
-        hintText: 'Enter your email',
-        prefixIcon: const Icon(Icons.email_outlined),
+        labelText: 'Username',
+        hintText: 'Enter your username',
+        prefixIcon: const Icon(Icons.person_outline),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        errorText: _usernameError,
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter your email';
+          return 'Please enter your username';
         }
-        if (!value.contains('@')) {
-          return 'Please enter a valid email';
+        if (value.length < 3) {
+          return 'Username must be at least 3 characters';
         }
         return null;
       },
@@ -91,6 +110,13 @@ class _LoginPageState extends State<LoginPage> {
     return TextFormField(
       controller: _passwordController,
       obscureText: _obscurePassword,
+      onChanged: (_) {
+        if (_passwordError != null) {
+          setState(() {
+            _passwordError = null;
+          });
+        }
+      },
       decoration: InputDecoration(
         labelText: 'Password',
         hintText: 'Enter your password',
@@ -110,6 +136,15 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        errorText: _passwordError,
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -143,18 +178,28 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildLoginButton() {
     return ElevatedButton(
-      onPressed: _handleLogin,
+      onPressed: _isLoading ? null : _handleLogin,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.red.shade700,
         foregroundColor: Colors.white,
+        disabledBackgroundColor: Colors.grey.shade400,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
       ),
-      child: const Text(
-        'Sign In',
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
+      child: _isLoading
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+          : const Text(
+              'Sign In',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
     );
   }
 
@@ -244,17 +289,49 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
+    // Clear previous errors
+    setState(() {
+      _usernameError = null;
+      _passwordError = null;
+    });
+
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       final auth = context.read<AuthService>();
-      auth.login(
-        name: _emailController.text.split('@').first,
-        email: _emailController.text,
+      final success = await auth.loginWithCredentials(
+        username: _usernameController.text.trim(),
+        password: _passwordController.text,
       );
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Login successful!')));
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (success) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login successful!')),
+        );
+      } else {
+        // Show error under password field for authentication errors
+        final errorMsg = auth.error ?? 'Login failed';
+        if (errorMsg.toLowerCase().contains('unauthorized') ||
+            errorMsg.toLowerCase().contains('invalid') ||
+            errorMsg.toLowerCase().contains('credentials')) {
+          setState(() {
+            _passwordError = 'Incorrect username or password';
+          });
+        } else {
+          // For other errors, show under username
+          setState(() {
+            _usernameError = errorMsg;
+          });
+        }
+      }
     }
   }
 }
