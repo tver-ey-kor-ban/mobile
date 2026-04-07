@@ -1,53 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../../shared/services/auth_service.dart';
-import '../../services/booking_api_service.dart';
 
-class BookingHistoryPage extends StatefulWidget {
+class BookingHistoryPage extends StatelessWidget {
   const BookingHistoryPage({super.key});
 
-  @override
-  State<BookingHistoryPage> createState() => _BookingHistoryPageState();
-}
-
-class _BookingHistoryPageState extends State<BookingHistoryPage> {
-  final BookingApiService _bookingService = BookingApiService();
-  List<dynamic> _bookings = [];
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadBookings();
-  }
-
-  Future<void> _loadBookings() async {
-    final auth = Provider.of<AuthService>(context, listen: false);
-    
-    if (auth.token != null) {
-      _bookingService.setAuthToken(auth.token!);
-    }
-
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      final bookings = await _bookingService.getProductOrders();
-      
-      setState(() {
-        _bookings = bookings;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
+  // Static sample booking data
+  final List<Map<String, dynamic>> _bookings = const [
+    {
+      'order_number': 'ORD-001',
+      'status': 'completed',
+      'shop': {'name': 'Khmer Auto Shop'},
+      'total_amount': '150.00',
+      'created_at': '2024-01-15T10:30:00',
+    },
+    {
+      'order_number': 'ORD-002',
+      'status': 'pending',
+      'shop': {'name': 'Speedy Garage'},
+      'total_amount': '85.50',
+      'created_at': '2024-01-20T14:15:00',
+    },
+    {
+      'order_number': 'ORD-003',
+      'status': 'confirmed',
+      'shop': {'name': 'Elite Motors'},
+      'total_amount': '220.00',
+      'created_at': '2024-02-05T09:00:00',
+    },
+    {
+      'order_number': 'ORD-004',
+      'status': 'cancelled',
+      'shop': {'name': 'Quick Fix Auto'},
+      'total_amount': '45.00',
+      'created_at': '2024-02-10T16:45:00',
+    },
+    {
+      'order_number': 'ORD-005',
+      'status': 'completed',
+      'shop': {'name': 'Khmer Auto Shop'},
+      'total_amount': '180.00',
+      'created_at': '2024-03-01T11:20:00',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -57,110 +50,52 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
         backgroundColor: Colors.red.shade700,
         foregroundColor: Colors.white,
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadBookings,
-        color: Colors.red.shade700,
-        child: _buildBody(),
-      ),
+      body: _bookings.isEmpty
+          ? _buildEmptyState()
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _bookings.length,
+              itemBuilder: (context, index) {
+                final booking = _bookings[index];
+                return _buildBookingCard(booking);
+              },
+            ),
     );
   }
 
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.grey.shade400,
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.calendar_today_outlined,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No Bookings Yet',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade600,
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Failed to load bookings',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade600,
-                ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your booking history will appear here',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade500,
               ),
-              const SizedBox(height: 8),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade500,
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _loadBookings,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade700,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
-    }
-
-    if (_bookings.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                size: 64,
-                color: Colors.grey.shade400,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No Bookings Yet',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your booking history will appear here',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _bookings.length,
-      itemBuilder: (context, index) {
-        final booking = _bookings[index];
-        return _buildBookingCard(booking);
-      },
+      ),
     );
   }
 
@@ -225,7 +160,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(

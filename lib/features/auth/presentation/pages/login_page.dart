@@ -312,10 +312,12 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       if (success) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful!')),
-        );
+        if (mounted) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login successful!')),
+          );
+        }
       } else {
         // Show error under password field for authentication errors
         final errorMsg = auth.error ?? 'Login failed';

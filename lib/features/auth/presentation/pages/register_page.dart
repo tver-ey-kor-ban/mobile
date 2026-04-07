@@ -14,6 +14,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -21,10 +22,12 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptTerms = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
@@ -52,6 +55,8 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             const SizedBox(height: 8),
             _buildNameField(),
+            const SizedBox(height: 16),
+            _buildUsernameField(),
             const SizedBox(height: 16),
             _buildEmailField(),
             const SizedBox(height: 16),
@@ -96,6 +101,31 @@ class _RegisterPageState extends State<RegisterPage> {
         }
         if (value.length < 2) {
           return 'Name must be at least 2 characters';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildUsernameField() {
+    return TextFormField(
+      controller: _usernameController,
+      decoration: InputDecoration(
+        labelText: 'Username',
+        hintText: 'Enter your username',
+        prefixIcon: const Icon(Icons.account_circle_outlined),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your username';
+        }
+        if (value.length < 3) {
+          return 'Username must be at least 3 characters';
         }
         return null;
       },
@@ -279,7 +309,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget _buildRegisterButton() {
     return ElevatedButton(
-      onPressed: _acceptTerms ? _handleRegister : null,
+      onPressed: _acceptTerms && !_isLoading ? _handleRegister : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.red.shade700,
         foregroundColor: Colors.white,
@@ -288,10 +318,19 @@ class _RegisterPageState extends State<RegisterPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
       ),
-      child: const Text(
-        'Create Account',
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
+      child: _isLoading
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+          : const Text(
+              'Create Account',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
     );
   }
 
@@ -380,18 +419,32 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void _handleRegister() {
+  void _handleRegister() async {
     if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
       final auth = context.read<AuthService>();
-      auth.login(
-        name: _nameController.text,
-        email: _emailController.text,
-        phone: _phoneController.text,
+      final success = await auth.register(
+        email: _emailController.text.trim(),
+        username: _usernameController.text.trim(),
+        fullName: _nameController.text.trim(),
+        password: _passwordController.text,
       );
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Registration successful!')));
+      setState(() => _isLoading = false);
+
+      if (success) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Registration successful!')),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(auth.error ?? 'Registration failed')),
+          );
+        }
+      }
     }
   }
 }
