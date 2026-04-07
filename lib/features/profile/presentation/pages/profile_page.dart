@@ -118,7 +118,7 @@ class ProfilePage extends StatelessWidget {
     if (auth.isAdmin) {
       userRole = 'Admin';
     } else if (auth.isShopOwner) {
-      userRole = 'Shop Owner';
+      userRole = 'Owner';
     } else if (auth.isMechanic) {
       userRole = 'Mechanic';
     } else if (auth.userRoles != null && auth.userRoles!.roles.isNotEmpty) {
@@ -165,6 +165,16 @@ class ProfilePage extends StatelessWidget {
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+
+                // Username
+                Text(
+                  '@${auth.userEmail?.split('@').first ?? 'username'}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 4),
