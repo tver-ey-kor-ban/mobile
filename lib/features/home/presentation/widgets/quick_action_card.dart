@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../search/presentation/pages/image_search_page.dart';
 
 class QuickActionFloatingCard extends StatelessWidget {
   const QuickActionFloatingCard({super.key});
@@ -32,8 +33,51 @@ class QuickActionFloatingCard extends StatelessWidget {
             _buildItem(Icons.calendar_month, 'ការកក់ទុក', Colors.orange),
             _buildItem(Icons.analytics, 'ប្រតិបត្តិការ', Colors.indigo),
             _buildItem(Icons.description, 'វិក្កយបត្រ', Colors.blueGrey),
+            _buildItemButton(
+              context,
+              Icons.camera_alt,
+              'ស្វែងរករូប',
+              Colors.purple,
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ImageSearchPage(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildItemButton(
+    BuildContext context,
+    IconData icon,
+    String label,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+        ],
       ),
     );
   }

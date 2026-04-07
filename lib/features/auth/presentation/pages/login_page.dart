@@ -68,13 +68,6 @@ class _LoginPageState extends State<LoginPage> {
     return TextFormField(
       controller: _usernameController,
       keyboardType: TextInputType.text,
-      onChanged: (_) {
-        if (_usernameError != null) {
-          setState(() {
-            _usernameError = null;
-          });
-        }
-      },
       decoration: InputDecoration(
         labelText: 'Username',
         hintText: 'Enter your username',
@@ -302,9 +295,9 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       final auth = context.read<AuthService>();
-      final success = await auth.loginWithCredentials(
-        username: _usernameController.text.trim(),
-        password: _passwordController.text,
+      auth.login(
+        name: _usernameController.text,
+        email: _usernameController.text,
       );
 
       setState(() {

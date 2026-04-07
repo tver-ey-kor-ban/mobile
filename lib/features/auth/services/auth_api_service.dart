@@ -3,24 +3,14 @@ import '../../../core/network/api_constants.dart';
 import '../../../core/errors/exceptions.dart';
 import '../data/models/auth_models.dart';
 
-/// Service class for handling authentication API calls
+/// Service class for handling authentication-related API calls
 class AuthApiService {
   final ApiClient _apiClient;
 
   AuthApiService({ApiClient? apiClient})
       : _apiClient = apiClient ?? ApiClient();
 
-  /// Set the authentication token for API requests
-  void setAuthToken(String token) {
-    _apiClient.setAuthToken(token);
-  }
-
-  /// Clear the authentication token
-  void clearAuthToken() {
-    _apiClient.clearAuthToken();
-  }
-
-  /// Login with username and password
+  /// Login user and get JWT token
   /// POST /api/v1/auth/login
   Future<LoginResponse> login(LoginRequest request) async {
     final response = await _apiClient.postForm(
@@ -39,7 +29,7 @@ class AuthApiService {
     }
   }
 
-  /// Register a new user
+  /// Register new user
   /// POST /api/v1/auth/register
   Future<RegisterResponse> register(RegisterRequest request) async {
     final response = await _apiClient.post(
@@ -53,6 +43,25 @@ class AuthApiService {
       _handleError(response);
       throw ServerException(
         response.errorMessage ?? 'Registration failed',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Refresh access token
+  /// POST /api/v1/auth/refresh
+  Future<LoginResponse> refreshToken(RefreshTokenRequest request) async {
+    final response = await _apiClient.post(
+      ApiConstants.refreshToken,
+      body: request.toJson(),
+    );
+
+    if (response.isSuccess) {
+      return LoginResponse.fromJson(response.data);
+    } else {
+      _handleError(response);
+      throw ServerException(
+        response.errorMessage ?? 'Token refresh failed',
         statusCode: response.statusCode,
       );
     }
@@ -74,37 +83,22 @@ class AuthApiService {
     }
   }
 
-  /// Get current user's roles from JWT token
-  /// GET /api/v1/auth/me/roles
-  Future<UserRolesResponse> getUserRoles() async {
-    final response = await _apiClient.get(ApiConstants.userRoles);
-
-    if (response.isSuccess) {
-      return UserRolesResponse.fromJson(response.data);
-    } else {
-      _handleError(response);
-      throw ServerException(
-        response.errorMessage ?? 'Failed to get user roles',
-        statusCode: response.statusCode,
-      );
-    }
-  }
-
   void _handleError(ApiResponse response) {
     switch (response.statusCode) {
       case 401:
         throw UnauthorizedException(
-            message: response.errorMessage ?? 'Unauthorized');
-      case 403:
-        throw UnauthorizedException(
-            message: response.errorMessage ?? 'Forbidden');
+            message: response.errorMessage ?? 'Invalid credentials');
       case 404:
         throw NotFoundException(
-            message: response.errorMessage ?? 'Not found');
+            message: response.errorMessage ?? 'User not found');
       case 422:
         throw ValidationException(
           response.errorMessage ?? 'Validation failed',
           errors: response.data?['errors'],
+        );
+      case 409:
+        throw ValidationException(
+          response.errorMessage ?? 'User already exists',
         );
       default:
         throw ServerException(
