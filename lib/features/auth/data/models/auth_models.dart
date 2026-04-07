@@ -85,6 +85,7 @@ class RegisterResponse {
   final bool isActive;
   final bool isSuperuser;
   final String roles;
+  final String? accessToken;
 
   RegisterResponse({
     required this.id,
@@ -94,6 +95,7 @@ class RegisterResponse {
     required this.isActive,
     required this.isSuperuser,
     required this.roles,
+    this.accessToken,
   });
 
   factory RegisterResponse.fromJson(Map<String, dynamic> json) {
@@ -105,6 +107,7 @@ class RegisterResponse {
       isActive: json['is_active'] ?? true,
       isSuperuser: json['is_superuser'] ?? false,
       roles: json['roles'] ?? 'user',
+      accessToken: json['access_token'] ?? json['accessToken'] ?? json['token'],
     );
   }
 }
@@ -149,4 +152,36 @@ class UserResponse {
       isActive: json['is_active'] ?? true,
     );
   }
+}
+
+/// Model for user roles response
+/// GET /api/v1/auth/me/roles
+class UserRolesResponse {
+  final List<String> roles;
+
+  UserRolesResponse({
+    required this.roles,
+  });
+
+  factory UserRolesResponse.fromJson(Map<String, dynamic> json) {
+    final rolesList = json['roles'] as List<dynamic>?;
+    return UserRolesResponse(
+      roles: rolesList?.map((e) => e.toString()).toList() ?? [],
+    );
+  }
+
+  /// Check if user has a specific role
+  bool hasRole(String role) => roles.contains(role);
+
+  /// Check if user is admin
+  bool get isAdmin => hasRole('admin');
+
+  /// Check if user is shop owner
+  bool get isShopOwner => hasRole('shop_owner') || hasRole('owner');
+
+  /// Check if user is mechanic
+  bool get isMechanic => hasRole('mechanic');
+
+  /// Check if user is customer
+  bool get isCustomer => hasRole('customer') || roles.isEmpty;
 }

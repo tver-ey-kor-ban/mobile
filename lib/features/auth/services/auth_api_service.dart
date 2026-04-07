@@ -83,6 +83,32 @@ class AuthApiService {
     }
   }
 
+  /// Get current user roles
+  /// GET /api/v1/auth/me/roles
+  Future<UserRolesResponse> getUserRoles() async {
+    final response = await _apiClient.get(ApiConstants.userRoles);
+
+    if (response.isSuccess) {
+      return UserRolesResponse.fromJson(response.data);
+    } else {
+      _handleError(response);
+      throw ServerException(
+        response.errorMessage ?? 'Failed to get user roles',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Set auth token for API client
+  void setAuthToken(String token) {
+    _apiClient.setAuthToken(token);
+  }
+
+  /// Clear auth token from API client
+  void clearAuthToken() {
+    _apiClient.clearAuthToken();
+  }
+
   void _handleError(ApiResponse response) {
     switch (response.statusCode) {
       case 401:

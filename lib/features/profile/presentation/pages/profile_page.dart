@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../../../shared/services/auth_service.dart';
 import '../../../auth/presentation/pages/login_page.dart' as login;
 import '../../../auth/presentation/pages/register_page.dart' as register;
+import '../../../shop/presentation/pages/create_shop_page.dart';
+import '../../../booking/presentation/pages/booking_history_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -111,6 +113,20 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildLoggedInView(BuildContext context, AuthService auth) {
+    // Get user role for display
+    String userRole = 'Customer';
+    if (auth.isAdmin) {
+      userRole = 'Admin';
+    } else if (auth.isShopOwner) {
+      userRole = 'Owner';
+    } else if (auth.isMechanic) {
+      userRole = 'Mechanic';
+    } else if (auth.userRoles != null && auth.userRoles!.roles.isNotEmpty) {
+      // Capitalize first letter of first role
+      final role = auth.userRoles!.roles.first;
+      userRole = role[0].toUpperCase() + role.substring(1);
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -153,12 +169,41 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
 
+                // Username
+                Text(
+                  '@${auth.userEmail?.split('@').first ?? 'username'}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(height: 4),
+
                 // Email
                 Text(
                   auth.userEmail ?? '',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Role Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    userRole,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -170,6 +215,21 @@ class ProfilePage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                // Show Create Shop button only for Shop Owners
+                if (auth.isShopOwner)
+                  _buildMenuTile(
+                    icon: Icons.store_outlined,
+                    title: 'Create Shop',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CreateShopPage(),
+                        ),
+                      );
+                    },
+                  ),
+                if (auth.isShopOwner) const SizedBox(height: 8),
                 _buildMenuTile(
                   icon: Icons.person_outline,
                   title: 'Edit Profile',
@@ -181,7 +241,12 @@ class ProfilePage extends StatelessWidget {
                   icon: Icons.history,
                   title: 'Booking History',
                   onTap: () {
-                    // TODO: Navigate to booking history
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BookingHistoryPage(),
+                      ),
+                    );
                   },
                 ),
                 _buildMenuTile(

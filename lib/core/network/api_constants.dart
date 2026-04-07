@@ -11,6 +11,7 @@ class ApiConstants {
   static const String register = '$apiVersion/auth/register';
   static const String refreshToken = '$apiVersion/auth/refresh';
   static const String currentUser = '$apiVersion/auth/me';
+  static const String userRoles = '$apiVersion/auth/me/roles';
 
   // Booking Endpoints
   static const String productOrders = '$apiVersion/product-orders';
@@ -29,4 +30,11 @@ class ApiConstants {
   static const String customerVehicles = '$apiVersion/customer-vehicles';
   static const String vehicleMakes = '$apiVersion/vehicles/makes';
   static const String vehicleModels = '$apiVersion/vehicles/models';
+
+  // Rating Endpoints
+  static String rateProduct(int productId) => '$apiVersion/ratings/products/$productId';
+  static String rateService(int serviceId) => '$apiVersion/ratings/services/$serviceId';
+  static String rateMechanic(int mechanicId) => '$apiVersion/ratings/mechanics/$mechanicId';
+  static String getProductRatings(int productId) => '$apiVersion/ratings/products/$productId';
+  static String getServiceRatings(int serviceId) => '$apiVersion/ratings/services/$serviceId';
 }
