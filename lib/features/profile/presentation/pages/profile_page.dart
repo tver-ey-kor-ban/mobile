@@ -5,6 +5,7 @@ import '../../../auth/presentation/pages/login_page.dart' as login;
 import '../../../auth/presentation/pages/register_page.dart' as register;
 import '../../../shop/presentation/pages/create_shop_page.dart';
 import '../../../booking/presentation/pages/booking_history_page.dart';
+import '../../../vehicle/presentation/pages/my_vehicles_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -253,7 +254,12 @@ class ProfilePage extends StatelessWidget {
                   icon: Icons.car_repair_outlined,
                   title: 'My Vehicles',
                   onTap: () {
-                    // TODO: Navigate to vehicles
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MyVehiclesPage(),
+                      ),
+                    );
                   },
                 ),
                 _buildMenuTile(
