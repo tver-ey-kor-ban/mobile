@@ -274,7 +274,8 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                         onChanged: (value) {
                           setState(() => _isPrimary = value);
                         },
-                        activeThumbColor: Colors.red.shade700,
+                        // ignore: deprecated_member_use
+                        activeColor: Colors.red.shade700,
                       ),
                     ],
                   ),
