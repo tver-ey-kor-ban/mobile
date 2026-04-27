@@ -28,6 +28,10 @@ class ApiConstants {
 
   // Vehicle Endpoints
   static const String customerVehicles = '$apiVersion/customer-vehicles';
+  static const String myVehicles = '$apiVersion/my-vehicles';
+  static String myVehicleDetail(int id) => '$apiVersion/my-vehicles/$id';
+  static String setPrimaryVehicle(int id) => '$apiVersion/my-vehicles/$id/set-primary';
+  static const String primaryVehicle = '$apiVersion/my-vehicles/primary';
   static const String vehicleMakes = '$apiVersion/vehicles/makes';
   static const String vehicleModels = '$apiVersion/vehicles/models';
 

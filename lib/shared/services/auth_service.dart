@@ -8,6 +8,7 @@ class AuthService extends ChangeNotifier {
 
   bool _isAuthenticated = false;
   String? _token;
+  String? _refreshToken;
   String? _userName;
   String? _userEmail;
   String? _userPhone;
@@ -17,6 +18,7 @@ class AuthService extends ChangeNotifier {
 
   bool get isAuthenticated => _isAuthenticated;
   String? get token => _token;
+  String? get refreshToken => _refreshToken;
   String? get userName => _userName;
   String? get userEmail => _userEmail;
   String? get userPhone => _userPhone;
@@ -57,8 +59,9 @@ class AuthService extends ChangeNotifier {
 
       final response = await _authApiService.login(request);
 
-      // Save token
+      // Save tokens
       _token = response.accessToken;
+      _refreshToken = response.refreshToken;
       _authApiService.setAuthToken(_token!);
 
       // Fetch user details
@@ -108,6 +111,7 @@ class AuthService extends ChangeNotifier {
       // Auto-login after registration
       if (response.accessToken != null) {
         _token = response.accessToken;
+        _refreshToken = response.accessToken;
         _authApiService.setAuthToken(_token!);
         await _fetchUserDetails();
         _isAuthenticated = true;
@@ -125,6 +129,29 @@ class AuthService extends ChangeNotifier {
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
+      return false;
+    }
+  }
+
+  /// Refresh access token using refresh token
+  /// POST /api/v1/auth/refresh
+  Future<bool> doRefreshToken() async {
+    try {
+      if (_refreshToken == null) return false;
+
+      final request = RefreshTokenRequest(refreshToken: _refreshToken!);
+      final response = await _authApiService.refreshToken(request);
+
+      _token = response.accessToken;
+      _refreshToken = response.refreshToken ?? _refreshToken;
+      _authApiService.setAuthToken(_token!);
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Token refresh failed: $e');
+      }
       return false;
     }
   }
@@ -179,6 +206,7 @@ class AuthService extends ChangeNotifier {
   void logout() {
     _isAuthenticated = false;
     _token = null;
+    _refreshToken = null;
     _userName = null;
     _userEmail = null;
     _userPhone = null;
