@@ -138,8 +138,7 @@ class ApiConstants {
 
   // Invoices
   static const String myInvoices = '$apiVersion/invoices/my-invoices';
-  static String myInvoiceById(int id) =>
-      '$apiVersion/invoices/my-invoices/$id';
+  static String myInvoiceById(int id) => '$apiVersion/invoices/my-invoices/$id';
   static String shopInvoices(int shopId) =>
       '$apiVersion/invoices/shops/$shopId';
   static String shopInvoiceById(int shopId, int id) =>

@@ -53,8 +53,7 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             const Text('Welcome!',
-                style:
-                    TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(
               'Sign in to access your profile and\nmanage your bookings',
@@ -74,8 +73,8 @@ class ProfilePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text('Sign In',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: 16),
@@ -91,8 +90,8 @@ class ProfilePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text('Create Account',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -146,8 +145,7 @@ class ProfilePage extends StatelessWidget {
                     title: 'Create / Manage Shop',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const CreateShopPage()),
+                      MaterialPageRoute(builder: (_) => const CreateShopPage()),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -170,8 +168,7 @@ class ProfilePage extends StatelessWidget {
                     title: 'My Vehicles',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const MyVehiclesPage()),
+                      MaterialPageRoute(builder: (_) => const MyVehiclesPage()),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -180,8 +177,7 @@ class ProfilePage extends StatelessWidget {
                     title: 'Repair Progress',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const MyRepairsPage()),
+                      MaterialPageRoute(builder: (_) => const MyRepairsPage()),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -200,8 +196,7 @@ class ProfilePage extends StatelessWidget {
                     title: 'My Invoices',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const MyInvoicesPage()),
+                      MaterialPageRoute(builder: (_) => const MyInvoicesPage()),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -292,36 +287,30 @@ class ProfilePage extends StatelessWidget {
           Text(
             auth.userName ?? 'User',
             style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white),
+                fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 2),
           if (auth.username != null)
             Text(
               '@${auth.username}',
               style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.8)),
+                  fontSize: 13, color: Colors.white.withValues(alpha: 0.8)),
             ),
           if (auth.userEmail != null) ...[
             const SizedBox(height: 2),
             Text(
               auth.userEmail!,
               style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.9)),
+                  fontSize: 13, color: Colors.white.withValues(alpha: 0.9)),
             ),
           ],
           const SizedBox(height: 8),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
             ),
             child: Text(
               userRole,
