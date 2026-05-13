@@ -10,7 +10,9 @@ import 'widgets/step_three_confirmation.dart';
 
 class BookingPage extends StatefulWidget {
   final String? initialService;
-  const BookingPage({super.key, this.initialService});
+  final int? shopId;
+  final String? shopName;
+  const BookingPage({super.key, this.initialService, this.shopId, this.shopName});
 
   @override
   State<BookingPage> createState() => _BookingPageState();
@@ -138,7 +140,11 @@ class _BookingPageState extends State<BookingPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.initialService ?? 'ការកក់ទុក')),
+      appBar: AppBar(
+        title: Text(widget.shopName != null
+            ? 'Book at ${widget.shopName}'
+            : widget.initialService ?? 'ការកក់ទុក'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

@@ -74,7 +74,7 @@ class ShopApiService {
   /// GET /api/v1/shops/{id}
   Future<ShopResponse> getShopById(int shopId) async {
     final response = await _apiClient.get(
-      '${ApiConstants.shopDetails}$shopId',
+      ApiConstants.shopById(shopId),
     );
 
     if (response.isSuccess) {
