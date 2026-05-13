@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'https://backend-1-qgqd.onrender.com';
+  static const String baseUrl = 'https://backend-1-s2fl.onrender.com';
   static const String apiVersion = '/api/v1';
 
   // Auth
