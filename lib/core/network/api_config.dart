@@ -15,7 +15,7 @@ class ApiConfig {
   /// Priority: 1. Compile-time (--dart-define) 2. .env file 3. Default value
   static const String baseUrl = String.fromEnvironment(
     'BASE_API_URL',
-    defaultValue: 'https://backend-1-qgqd.onrender.com',
+    defaultValue: 'https://backend-1-s2fl.onrender.com',
   );
 
   /// API Version prefix

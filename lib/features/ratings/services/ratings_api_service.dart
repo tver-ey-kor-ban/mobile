@@ -3,82 +3,62 @@ import '../../../core/network/api_constants.dart';
 import '../../../core/errors/exceptions.dart';
 import '../data/models/rating_model.dart';
 
-/// Service class for handling ratings-related API calls
 class RatingsApiService {
   final ApiClient _apiClient;
 
   RatingsApiService({ApiClient? apiClient})
       : _apiClient = apiClient ?? ApiClient();
 
-  /// Set the authentication token for API requests
-  void setAuthToken(String token) {
-    _apiClient.setAuthToken(token);
-  }
+  void setAuthToken(String token) => _apiClient.setAuthToken(token);
+  void clearAuthToken() => _apiClient.clearAuthToken();
 
-  /// Clear the authentication token
-  void clearAuthToken() {
-    _apiClient.clearAuthToken();
-  }
-
-  /// Rate a product
-  /// POST /api/v1/ratings/products/{productId}
-  Future<RatingResponse> rateProduct(int productId, RatingRequest request) async {
+  /// POST /ratings/products
+  Future<RatingResponse> rateProduct(ProductRatingRequest request) async {
     final response = await _apiClient.post(
-      ApiConstants.rateProduct(productId),
+      ApiConstants.rateProduct,
       body: request.toJson(),
     );
-
-    if (response.isSuccess) {
-      return RatingResponse.fromJson(response.data);
-    } else {
-      _handleError(response);
-      throw ServerException(
-        response.errorMessage ?? 'Failed to rate product',
-        statusCode: response.statusCode,
-      );
-    }
+    if (response.isSuccess) return RatingResponse.fromJson(response.data);
+    _handleError(response);
+    throw ServerException(
+      response.errorMessage ?? 'Failed to rate product',
+      statusCode: response.statusCode,
+    );
   }
 
-  /// Rate a service
-  /// POST /api/v1/ratings/services/{serviceId}
-  Future<RatingResponse> rateService(int serviceId, RatingRequest request) async {
+  /// POST /ratings/services
+  Future<RatingResponse> rateService(ServiceRatingRequest request) async {
     final response = await _apiClient.post(
-      ApiConstants.rateService(serviceId),
+      ApiConstants.rateService,
       body: request.toJson(),
     );
-
-    if (response.isSuccess) {
-      return RatingResponse.fromJson(response.data);
-    } else {
-      _handleError(response);
-      throw ServerException(
-        response.errorMessage ?? 'Failed to rate service',
-        statusCode: response.statusCode,
-      );
-    }
+    if (response.isSuccess) return RatingResponse.fromJson(response.data);
+    _handleError(response);
+    throw ServerException(
+      response.errorMessage ?? 'Failed to rate service',
+      statusCode: response.statusCode,
+    );
   }
 
-  /// Rate a mechanic
-  /// POST /api/v1/ratings/mechanics/{mechanicId}
-  Future<RatingResponse> rateMechanic(int shopId, int mechanicId, RatingRequest request) async {
+  /// POST /shops/{shopId}/mechanics/{mechanicId}/rate
+  Future<RatingResponse> rateMechanic(
+    int shopId,
+    int mechanicId,
+    MechanicRatingRequest request,
+  ) async {
     final response = await _apiClient.post(
       ApiConstants.rateMechanic(shopId, mechanicId),
       body: request.toJson(),
     );
-
-    if (response.isSuccess) {
-      return RatingResponse.fromJson(response.data);
-    } else {
-      _handleError(response);
-      throw ServerException(
-        response.errorMessage ?? 'Failed to rate mechanic',
-        statusCode: response.statusCode,
-      );
-    }
+    if (response.isSuccess) return RatingResponse.fromJson(response.data);
+    _handleError(response);
+    throw ServerException(
+      response.errorMessage ?? 'Failed to rate mechanic',
+      statusCode: response.statusCode,
+    );
   }
 
-  /// Get ratings for a product with pagination
-  /// GET /api/v1/ratings/products/{productId}?page={page}&limit={limit}
+  /// GET /ratings/products/{productId}/reviews
   Future<RatingsListResponse> getProductRatings(
     int productId, {
     int page = 1,
@@ -86,25 +66,17 @@ class RatingsApiService {
   }) async {
     final response = await _apiClient.get(
       ApiConstants.getProductRatings(productId),
-      queryParams: {
-        'page': page,
-        'limit': limit,
-      },
+      queryParams: {'page': page, 'limit': limit},
     );
-
-    if (response.isSuccess) {
-      return RatingsListResponse.fromJson(response.data);
-    } else {
-      _handleError(response);
-      throw ServerException(
-        response.errorMessage ?? 'Failed to fetch product ratings',
-        statusCode: response.statusCode,
-      );
-    }
+    if (response.isSuccess) return RatingsListResponse.fromJson(response.data);
+    _handleError(response);
+    throw ServerException(
+      response.errorMessage ?? 'Failed to fetch product ratings',
+      statusCode: response.statusCode,
+    );
   }
 
-  /// Get ratings for a service with pagination
-  /// GET /api/v1/ratings/services/{serviceId}?page={page}&limit={limit}
+  /// GET /ratings/services/{serviceId}/reviews
   Future<RatingsListResponse> getServiceRatings(
     int serviceId, {
     int page = 1,
@@ -112,24 +84,54 @@ class RatingsApiService {
   }) async {
     final response = await _apiClient.get(
       ApiConstants.getServiceRatings(serviceId),
-      queryParams: {
-        'page': page,
-        'limit': limit,
-      },
+      queryParams: {'page': page, 'limit': limit},
     );
-
-    if (response.isSuccess) {
-      return RatingsListResponse.fromJson(response.data);
-    } else {
-      _handleError(response);
-      throw ServerException(
-        response.errorMessage ?? 'Failed to fetch service ratings',
-        statusCode: response.statusCode,
-      );
-    }
+    if (response.isSuccess) return RatingsListResponse.fromJson(response.data);
+    _handleError(response);
+    throw ServerException(
+      response.errorMessage ?? 'Failed to fetch service ratings',
+      statusCode: response.statusCode,
+    );
   }
 
-  void _handleError(ApiResponse response) {
+  /// GET /ratings/products/{productId}/summary
+  Future<RatingSummary> getProductRatingSummary(int productId) async {
+    final response = await _apiClient.get(
+      ApiConstants.productRatingSummary(productId),
+    );
+    if (response.isSuccess) return RatingSummary.fromJson(response.data);
+    _handleError(response);
+    throw ServerException(
+      response.errorMessage ?? 'Failed to fetch product rating summary',
+      statusCode: response.statusCode,
+    );
+  }
+
+  /// GET /ratings/services/{serviceId}/summary
+  Future<RatingSummary> getServiceRatingSummary(int serviceId) async {
+    final response = await _apiClient.get(
+      ApiConstants.serviceRatingSummary(serviceId),
+    );
+    if (response.isSuccess) return RatingSummary.fromJson(response.data);
+    _handleError(response);
+    throw ServerException(
+      response.errorMessage ?? 'Failed to fetch service rating summary',
+      statusCode: response.statusCode,
+    );
+  }
+
+  /// GET /ratings/my-ratings
+  Future<RatingsListResponse> getMyRatings() async {
+    final response = await _apiClient.get(ApiConstants.myRatings);
+    if (response.isSuccess) return RatingsListResponse.fromJson(response.data);
+    _handleError(response);
+    throw ServerException(
+      response.errorMessage ?? 'Failed to fetch my ratings',
+      statusCode: response.statusCode,
+    );
+  }
+
+  void _handleError(dynamic response) {
     switch (response.statusCode) {
       case 401:
         throw UnauthorizedException(
@@ -137,14 +139,11 @@ class RatingsApiService {
       case 404:
         throw NotFoundException(
             message: response.errorMessage ?? 'Resource not found');
+      case 409:
       case 422:
         throw ValidationException(
           response.errorMessage ?? 'Validation failed',
           errors: response.data?['errors'],
-        );
-      case 409:
-        throw ValidationException(
-          response.errorMessage ?? 'Already rated',
         );
       default:
         throw ServerException(

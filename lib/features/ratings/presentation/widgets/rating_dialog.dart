@@ -5,7 +5,7 @@ class RatingDialog extends StatefulWidget {
   final String title;
   final String? subtitle;
   final int maxRating;
-  final Function(int rating, String? comment) onSubmit;
+  final Function(int rating, String? review) onSubmit;
 
   const RatingDialog({
     super.key,
@@ -21,12 +21,12 @@ class RatingDialog extends StatefulWidget {
 
 class _RatingDialogState extends State<RatingDialog> {
   int _selectedRating = 0;
-  final TextEditingController _commentController = TextEditingController();
+  final TextEditingController _reviewController = TextEditingController();
   bool _isSubmitting = false;
 
   @override
   void dispose() {
-    _commentController.dispose();
+    _reviewController.dispose();
     super.dispose();
   }
 
@@ -91,7 +91,7 @@ class _RatingDialogState extends State<RatingDialog> {
 
             // Comment Field
             TextField(
-              controller: _commentController,
+              controller: _reviewController,
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: 'Write your review (optional)',
@@ -145,7 +145,7 @@ class _RatingDialogState extends State<RatingDialog> {
 
     await widget.onSubmit(
       _selectedRating,
-      _commentController.text.isEmpty ? null : _commentController.text,
+      _reviewController.text.isEmpty ? null : _reviewController.text,
     );
 
     if (mounted) {
@@ -176,7 +176,7 @@ Future<void> showRatingDialog({
   required BuildContext context,
   required String title,
   String? subtitle,
-  required Function(int rating, String? comment) onSubmit,
+  required Function(int rating, String? review) onSubmit,
 }) {
   return showDialog(
     context: context,

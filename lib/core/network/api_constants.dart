@@ -36,14 +36,23 @@ class ApiConstants {
   // Browse (public)
   static String browseProducts(int shopId) =>
       '$apiVersion/customers/shops/$shopId/browse/products';
+  static String browseProduct(int shopId, int productId) =>
+      '$apiVersion/customers/shops/$shopId/browse/products/$productId';
   static String browseServices(int shopId) =>
       '$apiVersion/customers/shops/$shopId/browse/services';
+  static String browseService(int shopId, int serviceId) =>
+      '$apiVersion/customers/shops/$shopId/browse/services/$serviceId';
   static String browseShopInfo(int shopId) =>
       '$apiVersion/customers/shops/$shopId/browse/shop-info';
 
   // Categories
   static const String categories = '$apiVersion/categories';
+  static const String categoriesTree = '$apiVersion/categories/tree';
   static String categoryById(int id) => '$apiVersion/categories/$id';
+  static String categoryProducts(int id) => '$apiVersion/categories/$id/products';
+  static String categoriesByService(int serviceId) =>
+      '$apiVersion/categories/by-service/$serviceId';
+  static const String categoryServiceLinks = '$apiVersion/categories/service-links';
 
   // Vehicle Database (public)
   static const String vehicleMakes = '$apiVersion/vehicles/makes';
@@ -53,6 +62,10 @@ class ApiConstants {
       '$apiVersion/vehicles/models/$modelId/years';
   static String vehicleEngines(int yearId) =>
       '$apiVersion/vehicles/years/$yearId/engines';
+  static const String vehicleFuelTypes = '$apiVersion/vehicles/fuel-types';
+  static const String vehicleHierarchy = '$apiVersion/vehicles/hierarchy';
+  static const String vehicleSearch = '$apiVersion/vehicles/search';
+  static const String vehicleValidate = '$apiVersion/vehicles/validate';
 
   // Customer Vehicles
   static const String myVehicles = '$apiVersion/my-vehicles';
@@ -60,6 +73,7 @@ class ApiConstants {
   static String setVehiclePrimary(int id) =>
       '$apiVersion/my-vehicles/$id/set-primary';
   static const String primaryVehicle = '$apiVersion/my-vehicles/primary';
+  static const String filterProductsByVehicle = '$apiVersion/my-vehicles/filter-products';
 
   // Unified Booking & Product Orders
   static const String productOrders = '$apiVersion/product-orders';
@@ -70,6 +84,8 @@ class ApiConstants {
   static const String myOrders = '$apiVersion/product-orders/my-orders';
   static String myOrderById(int id) =>
       '$apiVersion/product-orders/my-orders/$id';
+  static String myOrderPriceBreakdown(int id) =>
+      '$apiVersion/product-orders/my-orders/$id/price-breakdown';
   static String cancelMyOrder(int id) =>
       '$apiVersion/product-orders/my-orders/$id/cancel';
   static String shopOrders(int shopId) =>
@@ -150,32 +166,85 @@ class ApiConstants {
       '$apiVersion/invoices/shops/$shopId/$id/payments';
 
   // Ratings
-  static String rateProduct(int productId) =>
-      '$apiVersion/ratings/products/$productId';
-  static String rateService(int serviceId) =>
-      '$apiVersion/ratings/services/$serviceId';
+  static const String rateProduct = '$apiVersion/ratings/products';
+  static const String rateService = '$apiVersion/ratings/services';
   static String rateMechanic(int shopId, int mechanicId) =>
       '$apiVersion/shops/$shopId/mechanics/$mechanicId/rate';
   static String getProductRatings(int productId) =>
       '$apiVersion/ratings/products/$productId/reviews';
   static String getServiceRatings(int serviceId) =>
       '$apiVersion/ratings/services/$serviceId/reviews';
+  static String productRatingSummary(int productId) =>
+      '$apiVersion/ratings/products/$productId/summary';
+  static String serviceRatingSummary(int serviceId) =>
+      '$apiVersion/ratings/services/$serviceId/summary';
+  static String shopTopProducts(int shopId) =>
+      '$apiVersion/ratings/shops/$shopId/top-products';
+  static String shopTopServices(int shopId) =>
+      '$apiVersion/ratings/shops/$shopId/top-services';
+  static const String myRatings = '$apiVersion/ratings/my-ratings';
 
   // Mechanic Performance
   static String shopMechanicsPerformance(int shopId) =>
       '$apiVersion/shops/$shopId/mechanics/performance';
+  static String topMechanics(int shopId) =>
+      '$apiVersion/shops/$shopId/mechanics/performance/top';
   static String myPerformance(int shopId) =>
       '$apiVersion/shops/$shopId/mechanics/my-performance';
   static String mechanicPerformance(int shopId, int mechanicId) =>
       '$apiVersion/shops/$shopId/mechanics/$mechanicId/performance';
+  static String mechanicPerformanceHistory(int shopId, int mechanicId) =>
+      '$apiVersion/shops/$shopId/mechanics/$mechanicId/performance/history';
+  static String recordMechanicPerformance(int shopId, int mechanicId) =>
+      '$apiVersion/shops/$shopId/mechanics/$mechanicId/performance/record';
 
   // Chat
   static const String chatRooms = '$apiVersion/chat/rooms';
   static String chatRoom(int roomId) => '$apiVersion/chat/rooms/$roomId';
   static String sendMessage(int roomId) =>
       '$apiVersion/chat/rooms/$roomId/messages';
+  static String markMessageRead(int roomId, int messageId) =>
+      '$apiVersion/chat/rooms/$roomId/messages/$messageId/read';
+  static String chatUnreadCount(int roomId) =>
+      '$apiVersion/chat/rooms/$roomId/unread-count';
+  static String closeChatRoom(int roomId) =>
+      '$apiVersion/chat/rooms/$roomId/close';
 
-  // Search
+  // Global Search (public)
+  static const String globalSearch = '$apiVersion/search';
+
+  // Shop Services (by type)
+  static String shopServicesByType(int shopId) =>
+      '$apiVersion/shops/$shopId/services/by-type';
+
+  // Shop Products (by service)
+  static String shopProductsByService(int shopId, int serviceId) =>
+      '$apiVersion/shops/$shopId/products/by-service/$serviceId';
+
+  // Image Search (placeholder)
   static String searchByImage(int shopId) =>
       '$apiVersion/shops/$shopId/products/search-by-image';
+
+  // Admin
+  static const String adminUsers = '$apiVersion/admin/users';
+  static String adminUser(int userId) => '$apiVersion/admin/users/$userId';
+  static String adminUserRole(int userId) =>
+      '$apiVersion/admin/users/$userId/role';
+  static String adminUserStatus(int userId) =>
+      '$apiVersion/admin/users/$userId/status';
+  static const String adminShops = '$apiVersion/admin/shops';
+  static String adminShop(int shopId) => '$apiVersion/admin/shops/$shopId';
+  static const String adminAppointments = '$apiVersion/admin/appointments';
+  static const String adminOrders = '$apiVersion/admin/orders';
+  static const String adminRatings = '$apiVersion/admin/ratings';
+  static String adminDeleteProductRating(int ratingId) =>
+      '$apiVersion/admin/ratings/product/$ratingId';
+  static String adminDeleteServiceRating(int ratingId) =>
+      '$apiVersion/admin/ratings/service/$ratingId';
+  static const String adminStatistics = '$apiVersion/admin/statistics';
+  static const String adminDailyStatistics = '$apiVersion/admin/statistics/daily';
+
+  // Shop Member role update
+  static String shopMemberRole(int shopId, int userId) =>
+      '$apiVersion/shops/$shopId/members/$userId/role';
 }
