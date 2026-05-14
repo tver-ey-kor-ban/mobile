@@ -60,9 +60,9 @@ class RatingsApiService {
 
   /// Rate a mechanic
   /// POST /api/v1/ratings/mechanics/{mechanicId}
-  Future<RatingResponse> rateMechanic(int mechanicId, RatingRequest request) async {
+  Future<RatingResponse> rateMechanic(int shopId, int mechanicId, RatingRequest request) async {
     final response = await _apiClient.post(
-      ApiConstants.rateMechanic(mechanicId),
+      ApiConstants.rateMechanic(shopId, mechanicId),
       body: request.toJson(),
     );
 

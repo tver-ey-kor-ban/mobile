@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/data/models/auth_models.dart';
 import '../../features/auth/services/auth_api_service.dart';
 import '../../core/network/api_client.dart';
@@ -19,6 +20,13 @@ class AuthService extends ChangeNotifier {
 
   final ApiClient _apiClient;
   late final AuthApiService _authApiService;
+
+  static const _keyToken = 'auth_token';
+  static const _keyRefreshToken = 'auth_refresh_token';
+  static const _keyUserId = 'auth_user_id';
+  static const _keyUserName = 'auth_user_name';
+  static const _keyUsername = 'auth_username';
+  static const _keyUserEmail = 'auth_user_email';
 
   AuthService() : _apiClient = ApiClient() {
     _authApiService = AuthApiService(apiClient: _apiClient);
@@ -43,6 +51,34 @@ class AuthService extends ChangeNotifier {
   bool get isMechanic => _userRoles?.isMechanic ?? false;
   bool get isCustomer => !isAdmin && !isShopOwner && !isMechanic;
 
+  /// Call this once at app startup (in main.dart or root widget)
+  Future<void> tryRestoreSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedToken = prefs.getString(_keyToken);
+    if (savedToken == null) return;
+
+    _token = savedToken;
+    _refreshToken = prefs.getString(_keyRefreshToken);
+    _userId = prefs.getInt(_keyUserId);
+    _userName = prefs.getString(_keyUserName);
+    _username = prefs.getString(_keyUsername);
+    _userEmail = prefs.getString(_keyUserEmail);
+    _apiClient.setAuthToken(savedToken);
+
+    try {
+      final roles = await _authApiService.getUserRoles();
+      _userRoles = roles;
+      _isAuthenticated = true;
+    } catch (_) {
+      // Token expired or invalid — clear session
+      await _clearPrefs();
+      _token = null;
+      _apiClient.clearAuthToken();
+    }
+
+    notifyListeners();
+  }
+
   Future<bool> register({
     required String email,
     required String username,
@@ -61,7 +97,6 @@ class AuthService extends ChangeNotifier {
           password: password,
         ),
       );
-      // Auto-login after successful registration
       final success = await loginWithCredentials(
         username: username,
         password: password,
@@ -101,6 +136,8 @@ class AuthService extends ChangeNotifier {
       _userEmail = user.email;
       _userRoles = roles;
 
+      await _saveToPrefs();
+
       _setLoading(false);
       notifyListeners();
       return true;
@@ -128,7 +165,7 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void logout() {
+  Future<void> logout() async {
     _isAuthenticated = false;
     _token = null;
     _refreshToken = null;
@@ -140,6 +177,7 @@ class AuthService extends ChangeNotifier {
     _userRoles = null;
     _shopId = null;
     _apiClient.clearAuthToken();
+    await _clearPrefs();
     notifyListeners();
   }
 
@@ -152,6 +190,26 @@ class AuthService extends ChangeNotifier {
   void setShopId(int id) {
     _shopId = id;
     notifyListeners();
+  }
+
+  Future<void> _saveToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_token != null) await prefs.setString(_keyToken, _token!);
+    if (_refreshToken != null) await prefs.setString(_keyRefreshToken, _refreshToken!);
+    if (_userId != null) await prefs.setInt(_keyUserId, _userId!);
+    if (_userName != null) await prefs.setString(_keyUserName, _userName!);
+    if (_username != null) await prefs.setString(_keyUsername, _username!);
+    if (_userEmail != null) await prefs.setString(_keyUserEmail, _userEmail!);
+  }
+
+  Future<void> _clearPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyToken);
+    await prefs.remove(_keyRefreshToken);
+    await prefs.remove(_keyUserId);
+    await prefs.remove(_keyUserName);
+    await prefs.remove(_keyUsername);
+    await prefs.remove(_keyUserEmail);
   }
 
   void _setLoading(bool value) {

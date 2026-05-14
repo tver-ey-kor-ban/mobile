@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../../shared/services/auth_service.dart';
 import '../../../../shared/widgets/custom_bottom_nav.dart';
 import '../../data/models/shop_model.dart';
 import '../../services/shop_api_service.dart';
@@ -25,7 +23,9 @@ class _ShopListPageState extends State<ShopListPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadShops());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadShops();
+    });
   }
 
   @override
@@ -40,8 +40,6 @@ class _ShopListPageState extends State<ShopListPage> {
       _error = null;
     });
     try {
-      final auth = context.read<AuthService>();
-      if (auth.token != null) _shopService.setAuthToken(auth.token!);
       final result = await _shopService.getShops(limit: 50);
       if (!mounted) return;
       setState(() {
@@ -135,7 +133,7 @@ class _ShopListPageState extends State<ShopListPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Check your connection and try again.',
+                _error ?? 'Check your connection and try again.',
                 style: TextStyle(color: Colors.grey.shade500),
                 textAlign: TextAlign.center,
               ),

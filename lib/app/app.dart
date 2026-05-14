@@ -9,12 +9,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => AuthService(),
+      create: (_) => AuthService()..tryRestoreSession(),
       child: MaterialApp(
         title: 'Mr. Lube Service',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(primarySwatch: Colors.red, useMaterial3: true),
-        // CHANGE THIS LINE:
         home: const HomePage(),
       ),
     );
