@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../shared/services/auth_service.dart';
 import '../../features/home/presentation/pages/home_page.dart';
-import '../../features/shop/presentation/pages/shop_list_page.dart';
+import '../../features/shop/presentation/pages/product_search_page.dart';
 import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
@@ -25,9 +25,10 @@ class CustomBottomNav extends StatelessWidget {
           (route) => false,
         );
       case 1:
-        Navigator.push(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const ShopListPage()),
+          MaterialPageRoute(builder: (_) => const ProductSearchPage()),
+          (route) => false,
         );
       case 2:
         Navigator.push(
@@ -69,7 +70,7 @@ class CustomBottomNav extends StatelessWidget {
         const BottomNavigationBarItem(
             icon: Icon(Icons.home), label: 'Home'),
         const BottomNavigationBarItem(
-            icon: Icon(Icons.store_outlined), label: 'Shops'),
+            icon: Icon(Icons.search_rounded), label: 'Search'),
         BottomNavigationBarItem(
           icon: Icon(
               isTechnical ? Icons.dashboard_outlined : Icons.history),

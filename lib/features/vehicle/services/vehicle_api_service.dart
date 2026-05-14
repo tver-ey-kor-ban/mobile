@@ -55,7 +55,7 @@ class VehicleApiService {
   /// Get specific vehicle details
   /// GET /api/v1/my-vehicles/{id}
   Future<VehicleResponse> getVehicle(int id) async {
-    final response = await _apiClient.get(ApiConstants.myVehicleDetail(id));
+    final response = await _apiClient.get(ApiConstants.myVehicleById(id));
 
     if (response.isSuccess) {
       return VehicleResponse.fromJson(response.data);
@@ -94,7 +94,7 @@ class VehicleApiService {
     CreateVehicleRequest request,
   ) async {
     final response = await _apiClient.put(
-      ApiConstants.myVehicleDetail(id),
+      ApiConstants.myVehicleById(id),
       body: request.toJson(),
     );
 
@@ -113,7 +113,7 @@ class VehicleApiService {
   /// POST /api/v1/my-vehicles/{id}/set-primary
   Future<void> setPrimaryVehicle(int id) async {
     final response = await _apiClient.post(
-      ApiConstants.setPrimaryVehicle(id),
+      ApiConstants.setVehiclePrimary(id),
     );
 
     if (!response.isSuccess) {
@@ -129,7 +129,7 @@ class VehicleApiService {
   /// DELETE /api/v1/my-vehicles/{id}
   Future<void> deleteVehicle(int id) async {
     final response = await _apiClient.delete(
-      ApiConstants.myVehicleDetail(id),
+      ApiConstants.myVehicleById(id),
     );
 
     if (!response.isSuccess) {

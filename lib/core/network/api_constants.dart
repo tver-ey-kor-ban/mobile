@@ -62,6 +62,7 @@ class ApiConstants {
   static const String primaryVehicle = '$apiVersion/my-vehicles/primary';
 
   // Unified Booking & Product Orders
+  static const String productOrders = '$apiVersion/product-orders';
   static const String unifiedBooking =
       '$apiVersion/product-orders/unified-booking';
   static const String calculatePrice =

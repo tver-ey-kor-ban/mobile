@@ -1,7 +1,10 @@
 # Garage Management Mobile App
 
 A Flutter mobile application for car service booking and garage management.  
-Backend: `https://backend-1-qgqd.onrender.com/api/v1`
+Backend: `https://backend-1-s2fl.onrender.com/api/v1`  
+Branch: `24-code-refactor`
+
+> **Note:** The backend runs on Render free tier — first request after inactivity may take 30–60 s (cold start).
 
 ---
 
@@ -13,8 +16,11 @@ Backend: `https://backend-1-qgqd.onrender.com/api/v1`
 - [API Endpoints Connected](#api-endpoints-connected)
 - [Screen Flow](#screen-flow)
 - [State Management](#state-management)
+- [Token Persistence](#token-persistence)
 - [Running the App](#running-the-app)
 - [Test Accounts](#test-accounts)
+- [Known Limitations](#known-limitations)
+- [Dependencies](#dependencies)
 
 ---
 
@@ -38,7 +44,7 @@ lib/
 ├── core/
 │   ├── network/
 │   │   ├── api_client.dart          # HTTP client (GET, POST, PUT, DELETE)
-│   │   ├── api_constants.dart       # All 60+ endpoint constants
+│   │   ├── api_constants.dart       # All endpoint constants
 │   │   └── api_config.dart          # Base URL configuration
 │   └── errors/
 │       └── exceptions.dart          # ServerException, UnauthorizedException, etc.
@@ -46,26 +52,41 @@ lib/
 ├── shared/
 │   ├── services/
 │   │   └── auth_service.dart        # Auth state (ChangeNotifier) — token, roles, userId
+│   │                                # Persists session via SharedPreferences
 │   └── widgets/
 │       ├── custom_bottom_nav.dart   # Role-aware bottom navigation
 │       └── ...
 │
 └── features/
     ├── auth/                        # Login, Register
-    ├── home/                        # Home page, Services list
+    ├── home/                        # Shop browse (reloads on login/logout)
+    │                                # + shortcut banner → ProductSearchPage
     ├── booking/                     # Unified booking flow, history
     ├── appointments/                # Customer appointments CRUD
-    ├── vehicles/                    # My vehicles CRUD
+    ├── vehicle/                     # My vehicles CRUD (primary feature)
+    ├── vehicles/                    # My vehicles CRUD (legacy, kept for compatibility)
     ├── notifications/               # Notifications + mark as read
     ├── repair_progress/             # Repair stage tracker
     ├── quotations/                  # Quotations (approve/reject)
     ├── invoices/                    # Invoices with payment records
     ├── activity/                    # Activity hub (appointments + orders)
     ├── mechanic/                    # Mechanic/owner dashboard & tools
-    ├── shop/                        # Shop creation
-    ├── ratings/                     # Product & service ratings
-    ├── search/                      # Image search
-    └── profile/                     # Profile page
+    ├── shop/
+    │   ├── data/models/
+    │   │   ├── shop_model.dart      # ShopResponse, ShopsListResponse
+    │   │   └── browse_models.dart   # ShopProduct, ShopServiceItem, response wrappers
+    │   ├── services/
+    │   │   ├── shop_api_service.dart    # GET /shops (handles flat-list & paginated responses)
+    │   │   └── browse_api_service.dart  # GET browse/products & browse/services per shop
+    │   └── presentation/pages/
+    │       ├── shop_list_page.dart      # Tab 1 — shop list
+    │       ├── shop_detail_page.dart    # Shop profile → ShopProductsPage (products/services tab)
+    │       ├── shop_products_page.dart  # Tabbed Products / Services for one shop
+    │       ├── product_search_page.dart # Global search across all shops (debounced, parallel)
+    │       └── create_shop_page.dart    # Owner — create new shop
+    ├── ratings/                     # Product, service & mechanic ratings
+    ├── search/                      # Image search (mock data — endpoint not ready)
+    └── profile/                     # Profile page (navigation hub)
 ```
 
 ---
@@ -76,6 +97,10 @@ lib/
 
 | Feature | Page | API |
 |---------|------|-----|
+| Browse shops | `HomePage` | `GET /shops` |
+| Search products & services | `ProductSearchPage` | `GET /customers/shops/{id}/browse/products` + `browse/services` (parallel, all shops) |
+| Browse shop products | `ShopProductsPage` (Products tab) | `GET /customers/shops/{id}/browse/products` |
+| Browse shop services | `ShopProductsPage` (Services tab) | `GET /customers/shops/{id}/browse/services` |
 | Book service / products | `BookingPage` | `POST /product-orders/unified-booking` |
 | View appointments | `MyAppointmentsPage` | `GET /customers/my-appointments` |
 | Cancel appointment | `MyAppointmentsPage` | `PUT /customers/my-appointments/{id}/cancel` |
@@ -118,12 +143,25 @@ All mechanic features plus:
 
 ### Authentication
 ```
-POST /auth/login
+POST /auth/login           (form-encoded: username, password, grant_type=password)
 POST /auth/register
 POST /auth/refresh
 GET  /auth/me
 GET  /auth/me/roles
 POST /auth/logout
+```
+
+### Shop Browse
+```
+GET  /shops                (requires auth — handles both flat-list and paginated responses)
+GET  /shops/{id}
+```
+
+### Shop Product & Service Browse (public)
+```
+GET  /customers/shops/{id}/browse/products    (ShopProductsPage, ProductSearchPage)
+GET  /customers/shops/{id}/browse/services    (ShopProductsPage, ProductSearchPage)
+GET  /customers/shops/{id}/browse/shop-info   (defined, not yet used in UI)
 ```
 
 ### Customer Appointments & Orders
@@ -133,9 +171,12 @@ GET  /customers/my-appointments/{id}
 PUT  /customers/my-appointments/{id}/cancel
 GET  /customers/my-service-history
 GET  /product-orders/my-orders
+GET  /product-orders/my-orders/{id}
 PUT  /product-orders/my-orders/{id}/cancel
 POST /product-orders/unified-booking
 POST /product-orders/calculate-price
+POST /product-orders              (product-only order)
+GET  /product-orders              (list product orders)
 ```
 
 ### My Vehicles
@@ -147,6 +188,14 @@ PUT    /my-vehicles/{id}
 DELETE /my-vehicles/{id}
 POST   /my-vehicles/{id}/set-primary
 GET    /my-vehicles/primary
+```
+
+### Vehicle Database (public lookup)
+```
+GET /vehicles/makes
+GET /vehicles/makes/{makeId}/models
+GET /vehicles/models/{modelId}/years
+GET /vehicles/years/{yearId}/engines
 ```
 
 ### Notifications
@@ -202,7 +251,7 @@ GET  /shops/{id}/mechanics/performance
 ```
 POST /ratings/products/{id}
 POST /ratings/services/{id}
-POST /shops/{id}/mechanics/{mid}/rate
+POST /shops/{shopId}/mechanics/{mechanicId}/rate
 GET  /ratings/products/{id}/reviews
 GET  /ratings/services/{id}/reviews
 ```
@@ -214,9 +263,21 @@ GET  /ratings/services/{id}/reviews
 ```
 App Launch
 │
-├── HomePage (public)
-│   ├── ServicesListPage
-│   └── BookingPage (requires auth prompt)
+├── tryRestoreSession()       ← restores JWT from SharedPreferences
+│
+├── HomePage (shop browse — requires auth)
+│   ├── Reloads automatically on login / logout
+│   ├── [Search banner] → ProductSearchPage (global product/service search)
+│   └── ShopCard → ShopDetailPage
+│           ├── "Book a Service"   → ShopProductsPage (Services tab, initialTab: 1)
+│           └── "Browse Products"  → ShopProductsPage (Products tab, initialTab: 0)
+│               └── Book button on each card → BookingPage
+│
+├── ProductSearchPage (tab 2 — "Search")
+│   ├── Idle   → shop browser list → ShopProductsPage
+│   └── Search → queries all shops in parallel (debounced 500 ms)
+│               → results tabbed: All / Products / Services
+│               → Book button → BookingPage
 │
 ├── ActivityPage (tab 3)
 │   ├── Customer → Appointments tab + Orders tab
@@ -249,27 +310,48 @@ The app uses **Provider** with a single `AuthService` (`ChangeNotifier`).
 
 ```dart
 AuthService
-  ├── isAuthenticated  bool
-  ├── token            String?       // JWT Bearer token
-  ├── userId           int?
-  ├── userName         String?       // full_name
-  ├── username         String?       // login username
-  ├── userEmail        String?
-  ├── userRoles        UserRolesResponse?
-  ├── shopId           int?          // selected shop for mechanic/owner
-  ├── isAdmin          bool
-  ├── isShopOwner      bool
-  ├── isMechanic       bool
-  ├── apiClient        ApiClient     // shared client, token already set
-  └── loginWithCredentials()         // calls /auth/login → /auth/me → /auth/me/roles
+  ├── isAuthenticated     bool
+  ├── token               String?       // JWT Bearer token (in-memory + SharedPreferences)
+  ├── refreshToken        String?
+  ├── userId              int?
+  ├── userName            String?       // full_name or username fallback
+  ├── username            String?       // login username
+  ├── userEmail           String?
+  ├── userRoles           UserRolesResponse?
+  ├── shopId              int?          // selected shop for mechanic/owner
+  ├── isAdmin             bool
+  ├── isShopOwner         bool
+  ├── isMechanic          bool
+  ├── isCustomer          bool
+  ├── apiClient           ApiClient     // shared client, token already set
+  ├── tryRestoreSession()               // called at startup — loads token from prefs
+  ├── loginWithCredentials()            // POST /auth/login → /auth/me → /auth/me/roles → saves to prefs
+  ├── register()                        // POST /auth/register → auto-login
+  └── logout()                          // clears memory + SharedPreferences
 ```
 
-All feature services use the same pattern:
+All feature services inject the token at call time:
 ```dart
 final auth = context.read<AuthService>();
-final service = SomeApiService();
 if (auth.token != null) service.setAuthToken(auth.token!);
 ```
+
+---
+
+## Token Persistence
+
+Session is saved to `SharedPreferences` on login and restored on app startup:
+
+| Key | Value |
+|-----|-------|
+| `auth_token` | JWT access token |
+| `auth_refresh_token` | Refresh token |
+| `auth_user_id` | User ID (int) |
+| `auth_user_name` | Display name |
+| `auth_username` | Login username |
+| `auth_user_email` | Email |
+
+On restore, roles are re-verified via `GET /auth/me/roles`. If the token is expired or invalid, the session is cleared automatically and the user is shown as logged out.
 
 ---
 
@@ -282,8 +364,11 @@ flutter pub get
 # Run on device/emulator
 flutter run
 
-# Run with a custom backend URL
-flutter run --dart-define=BASE_API_URL=http://localhost:8000
+# Build debug APK
+flutter build apk --debug
+
+# Analyze code
+flutter analyze --no-fatal-infos --no-fatal-warnings
 ```
 
 ---
@@ -297,7 +382,7 @@ flutter run --dart-define=BASE_API_URL=http://localhost:8000
 | Mechanic | `mechanic1` | `mechanic123` |
 | Customer | `customer1` | `customer123` |
 
-> After login the app fetches roles from `/auth/me/roles` and redirects the UI accordingly.
+> Accounts must exist on `backend-1-s2fl.onrender.com`. If migrating from the old backend (`backend-1-qgqd`), re-register — they are separate databases.
 
 ---
 
@@ -311,12 +396,27 @@ Displayed as a linear progress bar with percentage in `MyRepairsPage`.
 
 ---
 
+## Known Limitations
+
+| Area | Status |
+|------|--------|
+| Image search | Returns mock data — backend endpoint not yet available |
+| Home/shop list | Hardcoded service/product categories in `ServicesListPage` |
+| Booking car data | Car brands/models/services are hardcoded demo data |
+| Token refresh | Refresh token is saved but auto-refresh on expiry is not yet wired up |
+| Product search | No global search endpoint — `ProductSearchPage` fetches all shops' products in parallel and filters client-side |
+| `browse/shop-info` | Endpoint defined in `ApiConstants` but not yet surfaced in UI |
+| `oracleJdk-26/` folder | Accidentally placed inside `lib/features/home/presentation/pages/` — should be deleted |
+
+---
+
 ## Dependencies
 
-| Package | Purpose |
-|---------|---------|
-| `provider ^6.1.1` | State management |
-| `http ^1.2.0` | HTTP requests |
-| `http_parser ^4.0.2` | Multipart/form uploads |
-| `image_picker ^1.0.7` | Image selection for search |
-| `permission_handler ^11.3.0` | Camera/storage permissions |
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `provider` | `^6.1.1` | State management |
+| `http` | `^1.2.0` | HTTP requests |
+| `http_parser` | `^4.0.2` | Multipart/form uploads |
+| `shared_preferences` | `^2.3.0` | JWT token persistence across restarts |
+| `image_picker` | `^1.0.7` | Image selection for search |
+| `permission_handler` | `^11.3.0` | Camera/storage permissions |

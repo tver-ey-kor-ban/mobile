@@ -24,10 +24,25 @@ class _HomePageState extends State<HomePage> {
   bool _isLoading = true;
   String? _error;
 
+  bool _didInitialLoad = false;
+  bool _wasAuthenticated = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadShops());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isAuthenticated = context.read<AuthService>().isAuthenticated;
+    if (!_didInitialLoad || isAuthenticated != _wasAuthenticated) {
+      _didInitialLoad = true;
+      _wasAuthenticated = isAuthenticated;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadShops();
+      });
+    }
   }
 
   @override
@@ -223,7 +238,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Check your connection and try again.',
+                _error ?? 'Check your connection and try again.',
                 style: TextStyle(color: Colors.grey.shade500),
                 textAlign: TextAlign.center,
               ),

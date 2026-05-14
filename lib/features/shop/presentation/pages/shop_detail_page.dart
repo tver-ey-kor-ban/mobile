@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/models/shop_model.dart';
-import '../../../booking/presentation/pages/booking_page.dart';
+import 'shop_products_page.dart';
 
 class ShopDetailPage extends StatelessWidget {
   final ShopResponse shop;
@@ -208,9 +208,9 @@ class ShopDetailPage extends StatelessWidget {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => BookingPage(
-                                shopId: shop.id,
-                                shopName: shop.name,
+                              builder: (_) => ShopProductsPage(
+                                shop: shop,
+                                initialTab: 1,
                               ),
                             ),
                           ),
@@ -223,13 +223,15 @@ class ShopDetailPage extends StatelessWidget {
                           label: 'Browse Products',
                           subtitle: 'Parts & accessories',
                           color: Colors.blue,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Product browsing coming soon')),
-                            );
-                          },
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ShopProductsPage(
+                                shop: shop,
+                                initialTab: 0,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],

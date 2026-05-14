@@ -60,7 +60,19 @@ class ShopApiService {
     );
 
     if (response.isSuccess) {
-      return ShopsListResponse.fromJson(response.data);
+      // Backend may return a flat list or a paginated object
+      if (response.data is List) {
+        final list = (response.data as List)
+            .map((item) => ShopResponse.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return ShopsListResponse(
+          shops: list,
+          total: list.length,
+          page: page,
+          limit: limit,
+        );
+      }
+      return ShopsListResponse.fromJson(response.data as Map<String, dynamic>);
     } else {
       _handleError(response);
       throw ServerException(
