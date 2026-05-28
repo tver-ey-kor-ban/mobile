@@ -45,7 +45,7 @@ class _ShopRepairDetailPageState extends State<ShopRepairDetailPage> {
           title: const Text('Update Stage'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             DropdownButtonFormField<String>(
-              initialValue: selectedStage,
+              value: selectedStage,
               decoration: const InputDecoration(
                   labelText: 'New Stage', border: OutlineInputBorder()),
               items: RepairProgressModel.stages.map((s) {

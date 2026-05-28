@@ -94,7 +94,7 @@ class _ShopInvoiceDetailPageState extends State<ShopInvoiceDetailPage> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                initialValue: method,
+                value: method,
                 decoration: const InputDecoration(
                     labelText: 'Method', border: OutlineInputBorder()),
                 items: ['cash', 'card', 'transfer', 'mobile_payment', 'other']

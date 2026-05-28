@@ -75,7 +75,7 @@ class _CreateRepairPageState extends State<CreateRepairPage> {
           padding: const EdgeInsets.all(16),
           children: [
             DropdownButtonFormField<String>(
-              initialValue: _stage,
+              value: _stage,
               decoration: const InputDecoration(
                   labelText: 'Initial Stage', border: OutlineInputBorder()),
               items: RepairProgressModel.stages.map((s) {
