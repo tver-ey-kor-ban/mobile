@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/services/auth_service.dart';
+import '../../../../shared/widgets/item_image.dart';
 import '../../data/models/shop_model.dart';
 import '../../data/models/browse_models.dart';
 import '../../services/browse_api_service.dart';
@@ -353,10 +354,10 @@ class _ProductCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            _ItemThumbnail(
+            ItemImage(
               imageUrl: product.imageUrl,
               size: 62,
-              radius: 12,
+              borderRadius: 12,
               fallbackIcon: Icons.inventory_2_outlined,
               fallbackBg: Colors.blue.shade50,
               fallbackColor: Colors.blue.shade400,
@@ -451,10 +452,10 @@ class _ServiceCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            _ItemThumbnail(
+            ItemImage(
               imageUrl: service.imageUrl,
               size: 62,
-              radius: 12,
+              borderRadius: 12,
               fallbackIcon: Icons.build_outlined,
               fallbackBg: Colors.orange.shade50,
               fallbackColor: Colors.orange.shade400,
@@ -522,49 +523,6 @@ class _ServiceCard extends StatelessWidget {
   }
 }
 
-class _ItemThumbnail extends StatelessWidget {
-  final String? imageUrl;
-  final double size;
-  final double radius;
-  final IconData fallbackIcon;
-  final Color fallbackBg;
-  final Color fallbackColor;
-
-  const _ItemThumbnail({
-    required this.imageUrl,
-    required this.size,
-    required this.radius,
-    required this.fallbackIcon,
-    required this.fallbackBg,
-    required this.fallbackColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: hasImage
-            ? Image.network(
-                imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _fallback(),
-                loadingBuilder: (_, child, progress) =>
-                    progress == null ? child : _fallback(),
-              )
-            : _fallback(),
-      ),
-    );
-  }
-
-  Widget _fallback() => Container(
-        color: fallbackBg,
-        child: Icon(fallbackIcon, color: fallbackColor, size: size * 0.45),
-      );
-}
 
 class _StockBadge extends StatelessWidget {
   final bool available;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/services/auth_service.dart';
 import '../../../../shared/widgets/custom_bottom_nav.dart';
+import '../../../../shared/widgets/item_image.dart';
 import '../../data/models/shop_model.dart';
 import '../../services/shop_api_service.dart';
 import '../../../search/data/models/search_result_model.dart';
@@ -328,11 +329,13 @@ class _SearchResultCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _SearchThumb(
+          ItemImage(
             imageUrl: item.imageUrl,
-            bgColor: bgColor,
-            icon: icon,
-            iconColor: iconColor,
+            size: 56,
+            borderRadius: 12,
+            fallbackIcon: icon,
+            fallbackBg: bgColor,
+            fallbackColor: iconColor,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -486,43 +489,6 @@ class _ShopBrowseCard extends StatelessWidget {
   }
 }
 
-class _SearchThumb extends StatelessWidget {
-  final String? imageUrl;
-  final Color bgColor;
-  final IconData icon;
-  final Color iconColor;
-
-  const _SearchThumb({
-    required this.imageUrl,
-    required this.bgColor,
-    required this.icon,
-    required this.iconColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: SizedBox(
-        width: 56,
-        height: 56,
-        child: hasImage
-            ? Image.network(
-                imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _fallback(),
-              )
-            : _fallback(),
-      ),
-    );
-  }
-
-  Widget _fallback() => Container(
-        color: bgColor,
-        child: Icon(icon, color: iconColor, size: 26),
-      );
-}
 
 class _AvailabilityDot extends StatelessWidget {
   final bool available;

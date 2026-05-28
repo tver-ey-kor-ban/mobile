@@ -4,6 +4,7 @@ import '../../data/models/shop_model.dart';
 import '../../data/models/browse_models.dart';
 import '../../../booking/presentation/pages/booking_page.dart';
 import '../../../../shared/services/auth_service.dart';
+import '../../../../shared/widgets/item_image.dart';
 import '../../../ratings/services/ratings_api_service.dart';
 import '../../../ratings/data/models/rating_model.dart';
 import '../../../ratings/presentation/widgets/rating_dialog.dart';
@@ -345,32 +346,6 @@ class _SheetScaffold extends StatelessWidget {
     this.onSecondary,
   });
 
-  Widget _buildHeaderImage() {
-    final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
-    if (hasImage) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Image.network(
-          imageUrl!,
-          width: 90,
-          height: 90,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _iconBox(),
-        ),
-      );
-    }
-    return _iconBox();
-  }
-
-  Widget _iconBox() => Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.25),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Icon(icon, color: Colors.white, size: 34),
-      );
 
   @override
   Widget build(BuildContext context) {
@@ -413,7 +388,14 @@ class _SheetScaffold extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildHeaderImage(),
+                  ItemImage(
+                    imageUrl: imageUrl,
+                    size: 90,
+                    borderRadius: 16,
+                    fallbackIcon: icon,
+                    fallbackBg: Colors.white.withValues(alpha: 0.25),
+                    fallbackColor: Colors.white,
+                  ),
                   const SizedBox(height: 14),
                   header,
                 ],
