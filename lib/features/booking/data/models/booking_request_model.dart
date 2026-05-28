@@ -6,7 +6,7 @@ class UnifiedBookingRequest {
   final String? vehicleInfo;
   final int? serviceId;
   final String? serviceNotes;
-  final DateTime appointmentDate;
+  final DateTime? appointmentDate;
   final List<ProductItem> productItems;
   final String? productNotes;
   final DateTime? pickupDate;
@@ -22,7 +22,7 @@ class UnifiedBookingRequest {
     this.vehicleInfo,
     this.serviceId,
     this.serviceNotes,
-    required this.appointmentDate,
+    this.appointmentDate,
     this.productItems = const [],
     this.productNotes,
     this.pickupDate,
@@ -39,7 +39,7 @@ class UnifiedBookingRequest {
       'vehicle_info': vehicleInfo,
       'service_id': serviceId,
       'service_notes': serviceNotes,
-      'appointment_date': appointmentDate.toUtc().toIso8601String(),
+      'appointment_date': appointmentDate?.toUtc().toIso8601String(),
       'product_items': productItems.map((item) => item.toJson()).toList(),
       'product_notes': productNotes,
       'pickup_date': pickupDate?.toUtc().toIso8601String(),

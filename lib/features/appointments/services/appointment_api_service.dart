@@ -21,7 +21,8 @@ class AppointmentApiService {
 
     if (response.isSuccess) {
       final data = response.data;
-      final list = data is List ? data : (data['appointments'] ?? data['items'] ?? []);
+      final list =
+          data is List ? data : (data['appointments'] ?? data['items'] ?? []);
       return (list as List).map((e) => AppointmentModel.fromJson(e)).toList();
     }
     return [];
@@ -36,8 +37,7 @@ class AppointmentApiService {
   }
 
   Future<bool> cancelAppointment(int id) async {
-    final response =
-        await _apiClient.put(ApiConstants.cancelAppointment(id));
+    final response = await _apiClient.put(ApiConstants.cancelAppointment(id));
     return response.isSuccess;
   }
 
@@ -60,7 +60,8 @@ class AppointmentApiService {
 
     if (response.isSuccess) {
       final data = response.data;
-      final list = data is List ? data : (data['orders'] ?? data['items'] ?? []);
+      final list =
+          data is List ? data : (data['orders'] ?? data['items'] ?? []);
       return (list as List).map((e) => Map<String, dynamic>.from(e)).toList();
     }
     return [];

@@ -69,7 +69,8 @@ class ShopResponse {
       isActive: json['is_active'] ?? true,
       ownerId: json['owner_id'],
       createdAt: json['created_at'],
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
+      rating:
+          json['rating'] != null ? (json['rating'] as num).toDouble() : null,
       ratingCount: json['rating_count'],
     );
   }

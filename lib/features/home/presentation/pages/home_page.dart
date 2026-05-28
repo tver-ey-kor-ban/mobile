@@ -6,7 +6,8 @@ import 'package:my_app/features/shop/data/models/shop_model.dart';
 import 'package:my_app/features/shop/services/shop_api_service.dart';
 import 'package:my_app/features/shop/presentation/pages/shop_detail_page.dart';
 import 'package:my_app/features/booking/presentation/pages/booking_page.dart';
-import 'package:my_app/features/auth/presentation/pages/login_page.dart' as login;
+import 'package:my_app/features/auth/presentation/pages/login_page.dart'
+    as login;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -163,7 +164,8 @@ class _HomePageState extends State<HomePage> {
                             fontSize: 18,
                           ),
                         )
-                      : const Icon(Icons.person_outline, color: Colors.white, size: 24),
+                      : const Icon(Icons.person_outline,
+                          color: Colors.white, size: 24),
                 ),
               ),
             ],
@@ -337,7 +339,8 @@ class _ShopProfileCard extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(13),
                     border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.35), width: 1.5),
+                        color: Colors.white.withValues(alpha: 0.35),
+                        width: 1.5),
                   ),
                   child: const Icon(Icons.store_rounded,
                       color: Colors.white, size: 28),
@@ -366,8 +369,8 @@ class _ShopProfileCard extends StatelessWidget {
                           color: Colors.green.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: Colors.green.shade300
-                                  .withValues(alpha: 0.4)),
+                              color:
+                                  Colors.green.shade300.withValues(alpha: 0.4)),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -437,9 +440,7 @@ class _ShopProfileCard extends StatelessWidget {
                   Text(
                     shop.description!,
                     style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
-                        height: 1.5),
+                        fontSize: 13, color: Colors.grey.shade600, height: 1.5),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

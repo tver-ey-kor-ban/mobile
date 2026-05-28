@@ -36,8 +36,8 @@ class AppointmentModel {
       status: json['status'] ?? 'pending',
       vehicleInfo: json['vehicle_info'],
       notes: json['notes'] ?? json['service_notes'],
-      totalAmount: (json['total_amount'] ?? json['pricing']?['total'])
-          ?.toDouble(),
+      totalAmount:
+          (json['total_amount'] ?? json['pricing']?['total'])?.toDouble(),
       createdAt: json['created_at'] ?? '',
     );
   }

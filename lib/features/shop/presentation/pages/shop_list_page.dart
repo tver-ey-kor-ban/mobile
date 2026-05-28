@@ -227,7 +227,8 @@ class _ShopCard extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.store_rounded, color: Colors.red, size: 28),
+              child:
+                  const Icon(Icons.store_rounded, color: Colors.red, size: 28),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -262,8 +263,8 @@ class _ShopCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       shop.description!,
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade500),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

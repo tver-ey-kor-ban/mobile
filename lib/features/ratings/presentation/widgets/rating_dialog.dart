@@ -113,9 +113,8 @@ class _RatingDialogState extends State<RatingDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _selectedRating == 0 || _isSubmitting
-              ? null
-              : _handleSubmit,
+          onPressed:
+              _selectedRating == 0 || _isSubmitting ? null : _handleSubmit,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red.shade700,
             foregroundColor: Colors.white,

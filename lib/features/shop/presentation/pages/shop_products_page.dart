@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/services/auth_service.dart';
+import '../../../../shared/widgets/item_image.dart';
 import '../../data/models/shop_model.dart';
 import '../../data/models/browse_models.dart';
 import '../../services/browse_api_service.dart';
@@ -138,10 +139,12 @@ class _ShopProductsPageState extends State<ShopProductsPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(widget.shop.name,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
                 Text('Products & Services',
                     style: TextStyle(
-                        fontSize: 12, color: Colors.white.withValues(alpha: 0.8))),
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.8))),
               ],
             ),
             bottom: TabBar(
@@ -224,8 +227,7 @@ class _ShopProductsPageState extends State<ShopProductsPage>
 
   Widget _buildProductsList() {
     if (_loadingProducts) {
-      return const Center(
-          child: CircularProgressIndicator(color: Colors.red));
+      return const Center(child: CircularProgressIndicator(color: Colors.red));
     }
     if (_productError != null) {
       return _buildError(_productError!, _loadProducts);
@@ -255,8 +257,7 @@ class _ShopProductsPageState extends State<ShopProductsPage>
 
   Widget _buildServicesList() {
     if (_loadingServices) {
-      return const Center(
-          child: CircularProgressIndicator(color: Colors.red));
+      return const Center(child: CircularProgressIndicator(color: Colors.red));
     }
     if (_serviceError != null) {
       return _buildError(_serviceError!, _loadServices);
@@ -340,91 +341,89 @@ class _ProductCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => showProductDetail(context, product, shop),
       child: Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2))
+          ],
+        ),
+        child: Row(
+          children: [
+            ItemImage(
+              imageUrl: product.imageUrl,
+              size: 62,
+              borderRadius: 12,
+              fallbackIcon: Icons.inventory_2_outlined,
+              fallbackBg: Colors.blue.shade50,
+              fallbackColor: Colors.blue.shade400,
             ),
-            child: Icon(Icons.inventory_2_outlined,
-                color: Colors.blue.shade400, size: 26),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(product.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14)),
-                if (product.brand != null || product.category != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    [product.brand, product.category]
-                        .whereType<String>()
-                        .join(' · '),
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade400,
-                        fontWeight: FontWeight.w500),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(product.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                  if (product.brand != null || product.category != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      [product.brand, product.category]
+                          .whereType<String>()
+                          .join(' · '),
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade400,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                  if (product.description != null) ...[
+                    const SizedBox(height: 3),
+                    Text(product.description!,
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey.shade500),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                  ],
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Text(
+                        '\$${product.price.toStringAsFixed(2)}',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: Colors.red.shade700),
+                      ),
+                      const Spacer(),
+                      if (product.rating != null) ...[
+                        const Icon(Icons.star_rounded,
+                            size: 13, color: Colors.amber),
+                        const SizedBox(width: 2),
+                        Text(product.rating!.toStringAsFixed(1),
+                            style: const TextStyle(fontSize: 12)),
+                        const SizedBox(width: 8),
+                      ],
+                      _StockBadge(available: product.isAvailable),
+                    ],
                   ),
                 ],
-                if (product.description != null) ...[
-                  const SizedBox(height: 3),
-                  Text(product.description!,
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis),
-                ],
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(
-                      '\$${product.price.toStringAsFixed(2)}',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: Colors.red.shade700),
-                    ),
-                    const Spacer(),
-                    if (product.rating != null) ...[
-                      const Icon(Icons.star_rounded,
-                          size: 13, color: Colors.amber),
-                      const SizedBox(width: 2),
-                      Text(product.rating!.toStringAsFixed(1),
-                          style: const TextStyle(fontSize: 12)),
-                      const SizedBox(width: 8),
-                    ],
-                    _StockBadge(available: product.isAvailable),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(width: 10),
-          _BookButton(
-            available: product.isAvailable,
-            icon: Icons.shopping_cart_outlined,
-            onTap: () => showProductDetail(context, product, shop),
-          ),
-        ],
+            const SizedBox(width: 10),
+            _BookButton(
+              available: product.isAvailable,
+              icon: Icons.shopping_cart_outlined,
+              onTap: () => showProductDetail(context, product, shop),
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 }
@@ -453,15 +452,13 @@ class _ServiceCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(Icons.build_outlined,
-                  color: Colors.orange.shade400, size: 26),
+            ItemImage(
+              imageUrl: service.imageUrl,
+              size: 62,
+              borderRadius: 12,
+              fallbackIcon: Icons.build_outlined,
+              fallbackBg: Colors.orange.shade50,
+              fallbackColor: Colors.orange.shade400,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -525,6 +522,7 @@ class _ServiceCard extends StatelessWidget {
     );
   }
 }
+
 
 class _StockBadge extends StatelessWidget {
   final bool available;

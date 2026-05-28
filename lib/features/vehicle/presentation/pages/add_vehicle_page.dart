@@ -47,8 +47,10 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
     _yearController = TextEditingController(text: v?.year.toString() ?? '');
     _engineController = TextEditingController(text: v?.engine ?? '');
     _fuelTypeController = TextEditingController(text: v?.fuelType ?? '');
-    _transmissionController = TextEditingController(text: v?.transmission ?? '');
-    _licensePlateController = TextEditingController(text: v?.licensePlate ?? '');
+    _transmissionController =
+        TextEditingController(text: v?.transmission ?? '');
+    _licensePlateController =
+        TextEditingController(text: v?.licensePlate ?? '');
     _vinController = TextEditingController(text: v?.vin ?? '');
     _colorController = TextEditingController(text: v?.color ?? '');
     _nicknameController = TextEditingController(text: v?.nickname ?? '');

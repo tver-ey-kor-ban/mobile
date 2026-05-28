@@ -19,7 +19,13 @@ class _MyAppointmentsPageState extends State<MyAppointmentsPage>
   Map<String, List<AppointmentModel>> _grouped = {};
   bool _loading = true;
 
-  static const _tabs = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'];
+  static const _tabs = [
+    'All',
+    'Pending',
+    'Confirmed',
+    'Completed',
+    'Cancelled'
+  ];
   static const _statusMap = {
     'All': null,
     'Pending': 'pending',
@@ -68,13 +74,17 @@ class _MyAppointmentsPageState extends State<MyAppointmentsPage>
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Cancel Appointment'),
-        content: const Text('Are you sure you want to cancel this appointment?'),
+        content:
+            const Text('Are you sure you want to cancel this appointment?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('No')),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Yes, Cancel', style: TextStyle(color: Colors.white)),
+            child: const Text('Yes, Cancel',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -116,8 +126,7 @@ class _MyAppointmentsPageState extends State<MyAppointmentsPage>
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: _current.length,
-                      itemBuilder: (_, i) =>
-                          _buildCard(_current[i]),
+                      itemBuilder: (_, i) => _buildCard(_current[i]),
                     ),
             ),
     );
@@ -185,7 +194,8 @@ class _MyAppointmentsPageState extends State<MyAppointmentsPage>
                 _row(Icons.directions_car_outlined, appt.vehicleInfo!),
               ],
               const SizedBox(height: 4),
-              _row(Icons.calendar_today_outlined, _formatDate(appt.appointmentDate)),
+              _row(Icons.calendar_today_outlined,
+                  _formatDate(appt.appointmentDate)),
               if (appt.totalAmount != null) ...[
                 const SizedBox(height: 4),
                 _row(Icons.attach_money,
@@ -231,8 +241,8 @@ class _MyAppointmentsPageState extends State<MyAppointmentsPage>
       ),
       child: Text(
         status.toUpperCase(),
-        style: TextStyle(
-            fontSize: 11, fontWeight: FontWeight.bold, color: color),
+        style:
+            TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
       ),
     );
   }

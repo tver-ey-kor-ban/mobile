@@ -61,9 +61,8 @@ class RepairProgressApiService {
 
   Future<RepairProgressModel?> updateRepairStage(
       int shopId, int progressId, Map<String, dynamic> data) async {
-    final response = await _apiClient.put(
-        ApiConstants.updateRepair(shopId, progressId),
-        body: data);
+    final response = await _apiClient
+        .put(ApiConstants.updateRepair(shopId, progressId), body: data);
     if (response.isSuccess) return RepairProgressModel.fromJson(response.data);
     return null;
   }

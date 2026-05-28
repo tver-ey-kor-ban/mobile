@@ -107,7 +107,8 @@ class ShopApiService {
             message: response.errorMessage ?? 'Unauthorized');
       case 403:
         throw UnauthorizedException(
-            message: response.errorMessage ?? 'Forbidden - Shop Owner access only');
+            message:
+                response.errorMessage ?? 'Forbidden - Shop Owner access only');
       case 404:
         throw NotFoundException(
             message: response.errorMessage ?? 'Shop not found');

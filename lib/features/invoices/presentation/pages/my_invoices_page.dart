@@ -80,19 +80,17 @@ class _MyInvoicesPageState extends State<MyInvoicesPage> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text('Invoice #${inv.id}',
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.bold)),
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             _chip(inv.status, color),
           ]),
           if (inv.shopName != null) ...[
             const SizedBox(height: 6),
             Row(children: [
-              Icon(Icons.store_outlined,
-                  size: 14, color: Colors.grey.shade500),
+              Icon(Icons.store_outlined, size: 14, color: Colors.grey.shade500),
               const SizedBox(width: 4),
               Text(inv.shopName!,
-                  style: TextStyle(
-                      fontSize: 13, color: Colors.grey.shade600)),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
             ]),
           ],
           const SizedBox(height: 10),
@@ -136,15 +134,14 @@ class _MyInvoicesPageState extends State<MyInvoicesPage> {
                   size: 13, color: Colors.grey.shade500),
               const SizedBox(width: 4),
               Text('Due: ${_formatDate(inv.dueDate!)}',
-                  style: TextStyle(
-                      fontSize: 12, color: Colors.grey.shade600)),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
             ]),
           ],
           if (inv.payments.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text('Payments (${inv.payments.length})',
-                style: const TextStyle(
-                    fontWeight: FontWeight.w600, fontSize: 13)),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
             ...inv.payments.map((p) => Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Row(

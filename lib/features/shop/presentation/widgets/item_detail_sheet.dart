@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../data/models/shop_model.dart';
 import '../../data/models/browse_models.dart';
 import '../../../booking/presentation/pages/booking_page.dart';
+import '../../../../shared/services/auth_service.dart';
+import '../../../../shared/widgets/item_image.dart';
+import '../../../ratings/services/ratings_api_service.dart';
+import '../../../ratings/data/models/rating_model.dart';
+import '../../../ratings/presentation/widgets/rating_dialog.dart';
 
 void showProductDetail(
     BuildContext context, ShopProduct product, ShopResponse shop) {
@@ -36,6 +42,7 @@ class _ProductDetailSheet extends StatelessWidget {
     return _SheetScaffold(
       accentColor: Colors.blue,
       icon: Icons.inventory_2_outlined,
+      imageUrl: product.imageUrl,
       header: Column(
         children: [
           Text(
@@ -48,9 +55,7 @@ class _ProductDetailSheet extends StatelessWidget {
           Text(
             '\$${product.price.toStringAsFixed(2)}',
             style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                color: Colors.white),
+                fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white),
           ),
         ],
       ),
@@ -103,8 +108,7 @@ class _ProductDetailSheet extends StatelessWidget {
           // Description
           if (product.description != null) ...[
             const Text('Description',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: 6),
             Text(
               product.description!,
@@ -127,6 +131,41 @@ class _ProductDetailSheet extends StatelessWidget {
                   BookingPage(shopId: shop.id, shopName: shop.name)),
         );
       },
+      secondaryLabel: 'Rate this Product',
+      onSecondary: () => _showProductRating(context, product),
+    );
+  }
+
+  void _showProductRating(BuildContext context, ShopProduct product) {
+    final auth = context.read<AuthService>();
+    if (!auth.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to leave a rating')),
+      );
+      return;
+    }
+    final svc = RatingsApiService();
+    if (auth.token != null) svc.setAuthToken(auth.token!);
+
+    showRatingDialog(
+      context: context,
+      title: 'Rate Product',
+      subtitle: product.name,
+      onSubmit: (rating, review) async {
+        await svc.rateProduct(ProductRatingRequest(
+          productId: product.id,
+          rating: rating,
+          review: review,
+        ));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Thank you for your rating!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      },
     );
   }
 }
@@ -144,6 +183,7 @@ class _ServiceDetailSheet extends StatelessWidget {
     return _SheetScaffold(
       accentColor: Colors.orange,
       icon: Icons.build_outlined,
+      imageUrl: service.imageUrl,
       header: Column(
         children: [
           Text(
@@ -156,9 +196,7 @@ class _ServiceDetailSheet extends StatelessWidget {
           Text(
             '\$${service.price.toStringAsFixed(2)}',
             style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                color: Colors.white),
+                fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white),
           ),
         ],
       ),
@@ -210,8 +248,7 @@ class _ServiceDetailSheet extends StatelessWidget {
           // Description
           if (service.description != null) ...[
             const Text('Description',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: 6),
             Text(
               service.description!,
@@ -234,6 +271,41 @@ class _ServiceDetailSheet extends StatelessWidget {
                   BookingPage(shopId: shop.id, shopName: shop.name)),
         );
       },
+      secondaryLabel: 'Rate this Service',
+      onSecondary: () => _showServiceRating(context, service),
+    );
+  }
+
+  void _showServiceRating(BuildContext context, ShopServiceItem service) {
+    final auth = context.read<AuthService>();
+    if (!auth.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to leave a rating')),
+      );
+      return;
+    }
+    final svc = RatingsApiService();
+    if (auth.token != null) svc.setAuthToken(auth.token!);
+
+    showRatingDialog(
+      context: context,
+      title: 'Rate Service',
+      subtitle: service.name,
+      onSubmit: (rating, review) async {
+        await svc.rateService(ServiceRatingRequest(
+          serviceId: service.id,
+          rating: rating,
+          review: review,
+        ));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Thank you for your rating!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      },
     );
   }
 
@@ -250,23 +322,30 @@ class _ServiceDetailSheet extends StatelessWidget {
 class _SheetScaffold extends StatelessWidget {
   final Color accentColor;
   final IconData icon;
+  final String? imageUrl;
   final Widget header;
   final Widget body;
   final String ctaLabel;
   final IconData ctaIcon;
   final bool ctaEnabled;
   final VoidCallback onCta;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
 
   const _SheetScaffold({
     required this.accentColor,
     required this.icon,
+    this.imageUrl,
     required this.header,
     required this.body,
     required this.ctaLabel,
     required this.ctaIcon,
     required this.ctaEnabled,
     required this.onCta,
+    this.secondaryLabel,
+    this.onSecondary,
   });
+
 
   @override
   Widget build(BuildContext context) {
@@ -309,14 +388,13 @@ class _SheetScaffold extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(icon, color: Colors.white, size: 30),
+                  ItemImage(
+                    imageUrl: imageUrl,
+                    size: 90,
+                    borderRadius: 16,
+                    fallbackIcon: icon,
+                    fallbackBg: Colors.white.withValues(alpha: 0.25),
+                    fallbackColor: Colors.white,
                   ),
                   const SizedBox(height: 14),
                   header,
@@ -328,34 +406,57 @@ class _SheetScaffold extends StatelessWidget {
             Expanded(
               child: ListView(
                 controller: scrollCtrl,
-                padding: EdgeInsets.fromLTRB(
-                    20, 20, 20, 16 + bottomPadding),
+                padding: EdgeInsets.fromLTRB(20, 20, 20, 16 + bottomPadding),
                 children: [body],
               ),
             ),
 
-            // CTA button
+            // Buttons
             Padding(
               padding: EdgeInsets.fromLTRB(20, 0, 20, 16 + bottomPadding),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton.icon(
-                  onPressed: ctaEnabled ? onCta : null,
-                  icon: Icon(ctaIcon, size: 20),
-                  label: Text(ctaLabel,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        ctaEnabled ? Colors.red.shade700 : Colors.grey.shade300,
-                    foregroundColor:
-                        ctaEnabled ? Colors.white : Colors.grey.shade500,
-                    elevation: ctaEnabled ? 2 : 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onSecondary != null) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: OutlinedButton.icon(
+                        onPressed: onSecondary,
+                        icon: const Icon(Icons.star_outline, size: 18),
+                        label: Text(secondaryLabel ?? 'Rate'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.amber.shade700,
+                          side: BorderSide(color: Colors.amber.shade400),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: ctaEnabled ? onCta : null,
+                      icon: Icon(ctaIcon, size: 20),
+                      label: Text(ctaLabel,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ctaEnabled
+                            ? Colors.red.shade700
+                            : Colors.grey.shade300,
+                        foregroundColor:
+                            ctaEnabled ? Colors.white : Colors.grey.shade500,
+                        elevation: ctaEnabled ? 2 : 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
@@ -391,9 +492,7 @@ class _StatusChip extends StatelessWidget {
           ],
           Text(label,
               style: TextStyle(
-                  fontSize: 12,
-                  color: color,
-                  fontWeight: FontWeight.w600)),
+                  fontSize: 12, color: color, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -422,9 +521,7 @@ class _RatingChip extends StatelessWidget {
           Text(
             rating.toStringAsFixed(1),
             style: const TextStyle(
-                fontSize: 12,
-                color: Colors.amber,
-                fontWeight: FontWeight.w700),
+                fontSize: 12, color: Colors.amber, fontWeight: FontWeight.w700),
           ),
           if (count != null)
             Text(' ($count)',

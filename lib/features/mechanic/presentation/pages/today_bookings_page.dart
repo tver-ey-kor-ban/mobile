@@ -40,8 +40,7 @@ class _TodayBookingsPageState extends State<TodayBookingsPage> {
     final now = DateTime.now();
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            "Today's Bookings — ${now.day}/${now.month}/${now.year}"),
+        title: Text("Today's Bookings — ${now.day}/${now.month}/${now.year}"),
         backgroundColor: Colors.red.shade700,
         foregroundColor: Colors.white,
       ),
@@ -82,8 +81,7 @@ class _TodayBookingsPageState extends State<TodayBookingsPage> {
           context,
           MaterialPageRoute(
             builder: (_) => BookingDetailMechanicPage(
-                shopId: widget.shopId,
-                appointmentId: b.appointmentId),
+                shopId: widget.shopId, appointmentId: b.appointmentId),
           ),
         ).then((_) => _load()),
         child: Padding(
@@ -95,8 +93,7 @@ class _TodayBookingsPageState extends State<TodayBookingsPage> {
                 color: statusColor.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.build_outlined,
-                  color: statusColor, size: 22),
+              child: Icon(Icons.build_outlined, color: statusColor, size: 22),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -118,8 +115,7 @@ class _TodayBookingsPageState extends State<TodayBookingsPage> {
             ),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -133,8 +129,7 @@ class _TodayBookingsPageState extends State<TodayBookingsPage> {
               const SizedBox(height: 4),
               Text('\$${b.totalAmount.toStringAsFixed(2)}',
                   style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red.shade700)),
+                      fontWeight: FontWeight.bold, color: Colors.red.shade700)),
             ]),
           ]),
         ),

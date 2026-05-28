@@ -138,8 +138,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         isDense: true,
       ),
     );
@@ -219,15 +218,17 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(v.displayName,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                if (v.licensePlate != null)
-                  Text(v.licensePlate!,
-                      style: TextStyle(
-                          fontSize: 13, color: Colors.grey.shade600)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(v.displayName,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    if (v.licensePlate != null)
+                      Text(v.licensePlate!,
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade600)),
+                  ]),
             ),
             if (v.isPrimary)
               Container(
@@ -242,12 +243,10 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
               ),
           ]),
           const SizedBox(height: 12),
-          if (v.color != null)
-            _row(Icons.palette_outlined, v.color!),
+          if (v.color != null) _row(Icons.palette_outlined, v.color!),
           if (v.fuelType != null)
             _row(Icons.local_gas_station_outlined, v.fuelType!),
-          if (v.mileage != null)
-            _row(Icons.speed_outlined, '${v.mileage} km'),
+          if (v.mileage != null) _row(Icons.speed_outlined, '${v.mileage} km'),
           const SizedBox(height: 12),
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
             if (!v.isPrimary)

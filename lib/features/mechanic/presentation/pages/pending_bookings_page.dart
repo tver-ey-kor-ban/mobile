@@ -88,65 +88,57 @@ class _PendingBookingsPageState extends State<PendingBookingsPage> {
         ).then((_) => _load()),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        booking.customer?.name ?? 'Customer',
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '\$${booking.totalAmount.toStringAsFixed(2)}',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red.shade700,
-                            fontSize: 15),
-                      ),
-                    ]),
-                const SizedBox(height: 6),
-                if (booking.serviceName != null)
-                  _row(Icons.build_outlined, booking.serviceName!),
-                _row(Icons.directions_car_outlined, booking.vehicleInfo),
-                _row(Icons.calendar_today_outlined,
-                    _formatDate(booking.appointmentDate)),
-                if (booking.notes != null && booking.notes!.isNotEmpty)
-                  _row(Icons.notes_outlined, booking.notes!),
-                const SizedBox(height: 10),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: () =>
-                            _quickAction(booking, 'reject'),
-                        icon: const Icon(Icons.close, size: 16),
-                        label: const Text('Reject'),
-                        style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red,
-                            side: const BorderSide(color: Colors.red)),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: () =>
-                            _quickAction(booking, 'accept'),
-                        icon: const Icon(Icons.check, size: 16),
-                        label: const Text('Accept'),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white),
-                      ),
-                    ]),
-              ]),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(
+                booking.customer?.name ?? 'Customer',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                '\$${booking.totalAmount.toStringAsFixed(2)}',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red.shade700,
+                    fontSize: 15),
+              ),
+            ]),
+            const SizedBox(height: 6),
+            if (booking.serviceName != null)
+              _row(Icons.build_outlined, booking.serviceName!),
+            _row(Icons.directions_car_outlined, booking.vehicleInfo),
+            _row(Icons.calendar_today_outlined,
+                _formatDate(booking.appointmentDate)),
+            if (booking.notes != null && booking.notes!.isNotEmpty)
+              _row(Icons.notes_outlined, booking.notes!),
+            const SizedBox(height: 10),
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              OutlinedButton.icon(
+                onPressed: () => _quickAction(booking, 'reject'),
+                icon: const Icon(Icons.close, size: 16),
+                label: const Text('Reject'),
+                style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red)),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: () => _quickAction(booking, 'accept'),
+                icon: const Icon(Icons.check, size: 16),
+                label: const Text('Accept'),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white),
+              ),
+            ]),
+          ]),
         ),
       ),
     );
   }
 
-  Future<void> _quickAction(
-      MechanicBookingModel booking, String action) async {
+  Future<void> _quickAction(MechanicBookingModel booking, String action) async {
     if (action == 'reject') {
       final ctrl = TextEditingController();
       final reason = await showDialog<String>(
@@ -167,8 +159,8 @@ class _PendingBookingsPageState extends State<PendingBookingsPage> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context, ctrl.text),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Reject',
-                  style: TextStyle(color: Colors.white)),
+              child:
+                  const Text('Reject', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),

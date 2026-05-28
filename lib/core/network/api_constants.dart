@@ -49,10 +49,12 @@ class ApiConstants {
   static const String categories = '$apiVersion/categories';
   static const String categoriesTree = '$apiVersion/categories/tree';
   static String categoryById(int id) => '$apiVersion/categories/$id';
-  static String categoryProducts(int id) => '$apiVersion/categories/$id/products';
+  static String categoryProducts(int id) =>
+      '$apiVersion/categories/$id/products';
   static String categoriesByService(int serviceId) =>
       '$apiVersion/categories/by-service/$serviceId';
-  static const String categoryServiceLinks = '$apiVersion/categories/service-links';
+  static const String categoryServiceLinks =
+      '$apiVersion/categories/service-links';
 
   // Vehicle Database (public)
   static const String vehicleMakes = '$apiVersion/vehicles/makes';
@@ -73,7 +75,8 @@ class ApiConstants {
   static String setVehiclePrimary(int id) =>
       '$apiVersion/my-vehicles/$id/set-primary';
   static const String primaryVehicle = '$apiVersion/my-vehicles/primary';
-  static const String filterProductsByVehicle = '$apiVersion/my-vehicles/filter-products';
+  static const String filterProductsByVehicle =
+      '$apiVersion/my-vehicles/filter-products';
 
   // Unified Booking & Product Orders
   static const String productOrders = '$apiVersion/product-orders';
@@ -201,6 +204,8 @@ class ApiConstants {
   // Chat
   static const String chatRooms = '$apiVersion/chat/rooms';
   static String chatRoom(int roomId) => '$apiVersion/chat/rooms/$roomId';
+  static String chatMessages(int roomId) =>
+      '$apiVersion/chat/rooms/$roomId/messages';
   static String sendMessage(int roomId) =>
       '$apiVersion/chat/rooms/$roomId/messages';
   static String markMessageRead(int roomId, int messageId) =>
@@ -242,9 +247,14 @@ class ApiConstants {
   static String adminDeleteServiceRating(int ratingId) =>
       '$apiVersion/admin/ratings/service/$ratingId';
   static const String adminStatistics = '$apiVersion/admin/statistics';
-  static const String adminDailyStatistics = '$apiVersion/admin/statistics/daily';
+  static const String adminDailyStatistics =
+      '$apiVersion/admin/statistics/daily';
 
   // Shop Member role update
   static String shopMemberRole(int shopId, int userId) =>
       '$apiVersion/shops/$shopId/members/$userId/role';
+
+  // Shop Statistics
+  static String shopStatistics(int shopId) =>
+      '$apiVersion/shops/$shopId/statistics';
 }
