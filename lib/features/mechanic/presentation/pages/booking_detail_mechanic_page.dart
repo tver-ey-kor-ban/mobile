@@ -19,8 +19,7 @@ class BookingDetailMechanicPage extends StatefulWidget {
       _BookingDetailMechanicPageState();
 }
 
-class _BookingDetailMechanicPageState
-    extends State<BookingDetailMechanicPage> {
+class _BookingDetailMechanicPageState extends State<BookingDetailMechanicPage> {
   final _service = MechanicApiService();
   MechanicBookingModel? _booking;
   bool _loading = true;
@@ -36,8 +35,8 @@ class _BookingDetailMechanicPageState
     final token = context.read<AuthService>().token;
     if (token != null) _service.setAuthToken(token);
     setState(() => _loading = true);
-    final b = await _service.getBookingDetail(
-        widget.shopId, widget.appointmentId);
+    final b =
+        await _service.getBookingDetail(widget.shopId, widget.appointmentId);
     setState(() {
       _booking = b;
       _loading = false;
@@ -46,8 +45,8 @@ class _BookingDetailMechanicPageState
 
   Future<void> _accept() async {
     setState(() => _acting = true);
-    final ok = await _service.acceptBooking(
-        widget.shopId, widget.appointmentId);
+    final ok =
+        await _service.acceptBooking(widget.shopId, widget.appointmentId);
     setState(() => _acting = false);
     if (ok && mounted) {
       ScaffoldMessenger.of(context)
@@ -77,8 +76,7 @@ class _BookingDetailMechanicPageState
           ElevatedButton(
             onPressed: () => Navigator.pop(context, ctrl.text),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child:
-                const Text('Reject', style: TextStyle(color: Colors.white)),
+            child: const Text('Reject', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -108,9 +106,8 @@ class _BookingDetailMechanicPageState
           : _booking == null
               ? const Center(child: Text('Booking not found'))
               : _buildContent(),
-      bottomNavigationBar: _booking?.status == 'pending' && !_loading
-          ? _buildActions()
-          : null,
+      bottomNavigationBar:
+          _booking?.status == 'pending' && !_loading ? _buildActions() : null,
     );
   }
 
@@ -144,8 +141,8 @@ class _BookingDetailMechanicPageState
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 15)),
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           const Divider(),
           ...rows,
         ]),
@@ -160,13 +157,12 @@ class _BookingDetailMechanicPageState
         SizedBox(
           width: 80,
           child: Text(label,
-              style:
-                  TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
         ),
         Expanded(
           child: Text(value,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w500, fontSize: 13)),
+              style:
+                  const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
         ),
       ]),
     );

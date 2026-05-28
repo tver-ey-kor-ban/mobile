@@ -1,16 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../shared/services/auth_service.dart';
+import '../../../chat/services/chat_api_service.dart';
+import '../../../chat/presentation/pages/chat_room_page.dart';
 import '../../data/models/shop_model.dart';
 import 'shop_products_page.dart';
 
-class ShopDetailPage extends StatelessWidget {
+class ShopDetailPage extends StatefulWidget {
   final ShopResponse shop;
 
   const ShopDetailPage({super.key, required this.shop});
 
   @override
+  State<ShopDetailPage> createState() => _ShopDetailPageState();
+}
+
+class _ShopDetailPageState extends State<ShopDetailPage> {
+  bool _startingChat = false;
+
+  ShopResponse get shop => widget.shop;
+
+  Future<void> _startChat() async {
+    final auth = context.read<AuthService>();
+    if (!auth.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to start a chat')),
+      );
+      return;
+    }
+    setState(() => _startingChat = true);
+    final service = ChatApiService();
+    service.setAuthToken(auth.token!);
+    final room = await service.createChatRoom(shopId: shop.id);
+    if (!mounted) return;
+    setState(() => _startingChat = false);
+    if (room != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ChatRoomPage(room: room)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not start chat. Try again.')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _startingChat ? null : _startChat,
+              icon: _startingChat
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.red.shade700,
+                      ),
+                    )
+                  : Icon(Icons.chat_bubble_outline, color: Colors.red.shade700),
+              label: Text(
+                _startingChat ? 'Opening chat...' : 'Chat with Shop',
+                style: TextStyle(
+                    color: Colors.red.shade700, fontWeight: FontWeight.w600),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(color: Colors.red.shade300),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ),
+        ),
+      ),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -162,8 +244,8 @@ class ShopDetailPage extends StatelessWidget {
                     const SizedBox(height: 20),
                     const Text(
                       'About',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     const SizedBox(height: 10),
                     Container(
@@ -193,8 +275,7 @@ class ShopDetailPage extends StatelessWidget {
                   const SizedBox(height: 28),
                   const Text(
                     'What would you like to do?',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -236,6 +317,36 @@ class ShopDetailPage extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _startingChat ? null : _startChat,
+                      icon: _startingChat
+                          ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.red.shade700,
+                              ),
+                            )
+                          : Icon(Icons.chat_bubble_outline,
+                              color: Colors.red.shade700),
+                      label: Text(
+                        _startingChat ? 'Opening chat...' : 'Chat with Shop',
+                        style: TextStyle(
+                            color: Colors.red.shade700,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(color: Colors.red.shade300),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -263,8 +374,8 @@ class _InfoRow extends StatelessWidget {
           Icon(icon, size: 18, color: Colors.red.shade400),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(text,
-                style: const TextStyle(fontSize: 14, height: 1.4)),
+            child:
+                Text(text, style: const TextStyle(fontSize: 14, height: 1.4)),
           ),
         ],
       ),
@@ -313,15 +424,12 @@ class _ActionButton extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14),
+                  color: color, fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style:
-                  TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
             ),
           ],
         ),

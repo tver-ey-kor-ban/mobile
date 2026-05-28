@@ -32,8 +32,7 @@ class VehicleApiService {
     return null;
   }
 
-  Future<VehicleModel?> updateVehicle(
-      int id, Map<String, dynamic> data) async {
+  Future<VehicleModel?> updateVehicle(int id, Map<String, dynamic> data) async {
     final response =
         await _apiClient.put(ApiConstants.myVehicleById(id), body: data);
     if (response.isSuccess) return VehicleModel.fromJson(response.data);
@@ -46,8 +45,7 @@ class VehicleApiService {
   }
 
   Future<bool> setVehiclePrimary(int id) async {
-    final response =
-        await _apiClient.post(ApiConstants.setVehiclePrimary(id));
+    final response = await _apiClient.post(ApiConstants.setVehiclePrimary(id));
     return response.isSuccess;
   }
 

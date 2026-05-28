@@ -51,6 +51,11 @@ class CustomBottomNav extends StatelessWidget {
             MaterialPageRoute(builder: (_) => const ProfilePage()),
           );
         }
+      case 4:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ProfilePage()),
+        );
     }
   }
 
@@ -59,29 +64,33 @@ class CustomBottomNav extends StatelessWidget {
     final auth = context.watch<AuthService>();
     final isTechnical = auth.isMechanic || auth.isShopOwner;
 
+    final items = [
+      const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+      const BottomNavigationBarItem(
+          icon: Icon(Icons.search_rounded), label: 'Search'),
+      BottomNavigationBarItem(
+        icon: Icon(isTechnical ? Icons.dashboard_outlined : Icons.history),
+        label: isTechnical ? 'Dashboard' : 'Activity',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(isTechnical ? Icons.notifications_outlined : Icons.person),
+        label: isTechnical ? 'Alerts' : 'Profile',
+      ),
+      if (isTechnical)
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          label: 'Profile',
+        ),
+    ];
+
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       selectedItemColor: Colors.red,
       unselectedItemColor: Colors.grey,
       showUnselectedLabels: true,
-      currentIndex: currentIndex,
+      currentIndex: currentIndex.clamp(0, items.length - 1),
       onTap: (index) => _onItemTapped(context, index),
-      items: [
-        const BottomNavigationBarItem(
-            icon: Icon(Icons.home), label: 'Home'),
-        const BottomNavigationBarItem(
-            icon: Icon(Icons.search_rounded), label: 'Search'),
-        BottomNavigationBarItem(
-          icon: Icon(
-              isTechnical ? Icons.dashboard_outlined : Icons.history),
-          label: isTechnical ? 'Dashboard' : 'Activity',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(
-              isTechnical ? Icons.notifications_outlined : Icons.person),
-          label: isTechnical ? 'Alerts' : 'Profile',
-        ),
-      ],
+      items: items,
     );
   }
 }

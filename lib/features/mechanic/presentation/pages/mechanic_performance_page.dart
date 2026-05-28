@@ -12,8 +12,7 @@ class MechanicPerformancePage extends StatefulWidget {
       _MechanicPerformancePageState();
 }
 
-class _MechanicPerformancePageState
-    extends State<MechanicPerformancePage> {
+class _MechanicPerformancePageState extends State<MechanicPerformancePage> {
   final _service = MechanicApiService();
   Map<String, dynamic>? _myPerf;
   Map<String, dynamic>? _allPerf;
@@ -35,8 +34,7 @@ class _MechanicPerformancePageState
     final myPerf = await _service.getMyPerformance(widget.shopId);
     Map<String, dynamic>? allPerf;
     if (_isOwner) {
-      allPerf =
-          await _service.getAllMechanicsPerformance(widget.shopId);
+      allPerf = await _service.getAllMechanicsPerformance(widget.shopId);
     }
 
     setState(() {
@@ -66,8 +64,7 @@ class _MechanicPerformancePageState
                       if (_myPerf != null) ...[
                         const Text('My Performance',
                             style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold)),
+                                fontSize: 18, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 12),
                         _buildMyPerf(),
                         const SizedBox(height: 24),
@@ -75,13 +72,11 @@ class _MechanicPerformancePageState
                       if (_isOwner && _allPerf != null) ...[
                         const Text('Team Performance',
                             style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold)),
+                                fontSize: 18, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 12),
                         _buildTeamPerf(),
                       ],
-                      if (_myPerf == null && _allPerf == null)
-                        _buildEmpty(),
+                      if (_myPerf == null && _allPerf == null) _buildEmpty(),
                     ]),
               ),
             ),
@@ -93,26 +88,21 @@ class _MechanicPerformancePageState
     final totalJobs = p['total_jobs'] ?? p['jobs_completed'] ?? 0;
     final revenue =
         (p['total_revenue'] ?? p['revenue_generated'] ?? 0.0).toDouble();
-    final avgRating =
-        (p['average_rating'] ?? p['rating'] ?? 0.0).toDouble();
+    final avgRating = (p['average_rating'] ?? p['rating'] ?? 0.0).toDouble();
     final rank = p['rank'];
 
     return Card(
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
-          Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _perfStat('Jobs', '$totalJobs', Colors.blue,
-                    Icons.build_outlined),
-                _perfStat('Revenue', '\$${revenue.toStringAsFixed(0)}',
-                    Colors.green, Icons.attach_money),
-                _perfStat('Rating', avgRating.toStringAsFixed(1),
-                    Colors.orange, Icons.star_outline),
-              ]),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            _perfStat('Jobs', '$totalJobs', Colors.blue, Icons.build_outlined),
+            _perfStat('Revenue', '\$${revenue.toStringAsFixed(0)}',
+                Colors.green, Icons.attach_money),
+            _perfStat('Rating', avgRating.toStringAsFixed(1), Colors.orange,
+                Icons.star_outline),
+          ]),
           if (rank != null) ...[
             const Divider(height: 24),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -130,30 +120,25 @@ class _MechanicPerformancePageState
 
   Widget _buildTeamPerf() {
     final summary = _allPerf?['shop_summary'] ?? {};
-    final mechanics =
-        (_allPerf?['mechanics'] as List<dynamic>?) ?? [];
+    final mechanics = (_allPerf?['mechanics'] as List<dynamic>?) ?? [];
 
     return Column(children: [
       Card(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _perfStat('Total Jobs',
-                    '${summary['total_jobs'] ?? 0}', Colors.blue,
-                    Icons.build_outlined),
-                _perfStat(
-                    'Revenue',
-                    '\$${(summary['total_revenue'] ?? 0.0).toStringAsFixed(0)}',
-                    Colors.green,
-                    Icons.attach_money),
-                _perfStat('Mechanics',
-                    '${summary['mechanic_count'] ?? 0}', Colors.purple,
-                    Icons.people_outlined),
-              ]),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            _perfStat('Total Jobs', '${summary['total_jobs'] ?? 0}',
+                Colors.blue, Icons.build_outlined),
+            _perfStat(
+                'Revenue',
+                '\$${(summary['total_revenue'] ?? 0.0).toStringAsFixed(0)}',
+                Colors.green,
+                Icons.attach_money),
+            _perfStat('Mechanics', '${summary['mechanic_count'] ?? 0}',
+                Colors.purple, Icons.people_outlined),
+          ]),
         ),
       ),
       const SizedBox(height: 12),
@@ -161,17 +146,14 @@ class _MechanicPerformancePageState
         const Align(
           alignment: Alignment.centerLeft,
           child: Text('Mechanics',
-              style:
-                  TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
         ),
         const SizedBox(height: 8),
         ...mechanics.map((m) {
           final name = m['mechanic_name'] ?? m['name'] ?? 'Mechanic';
           final jobs = m['total_jobs'] ?? m['jobs'] ?? 0;
-          final rev =
-              (m['total_revenue'] ?? m['revenue'] ?? 0.0).toDouble();
-          final rating =
-              (m['average_rating'] ?? m['rating'] ?? 0.0).toDouble();
+          final rev = (m['total_revenue'] ?? m['revenue'] ?? 0.0).toDouble();
+          final rating = (m['average_rating'] ?? m['rating'] ?? 0.0).toDouble();
           return Card(
             margin: const EdgeInsets.only(bottom: 8),
             child: ListTile(
@@ -183,8 +165,7 @@ class _MechanicPerformancePageState
                 ),
               ),
               title: Text(name,
-                  style:
-                      const TextStyle(fontWeight: FontWeight.w600)),
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
               subtitle: Text('$jobs jobs  ·  \$${rev.toStringAsFixed(0)}'),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 const Icon(Icons.star, size: 14, color: Colors.amber),
@@ -198,16 +179,14 @@ class _MechanicPerformancePageState
     ]);
   }
 
-  Widget _perfStat(
-      String label, String value, Color color, IconData icon) {
+  Widget _perfStat(String label, String value, Color color, IconData icon) {
     return Column(children: [
       Icon(icon, color: color, size: 28),
       const SizedBox(height: 6),
       Text(value,
           style: TextStyle(
               fontWeight: FontWeight.bold, fontSize: 18, color: color)),
-      Text(label,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+      Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
     ]);
   }
 
@@ -216,8 +195,7 @@ class _MechanicPerformancePageState
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(children: [
-          Icon(Icons.bar_chart_outlined,
-              size: 64, color: Colors.grey.shade400),
+          Icon(Icons.bar_chart_outlined, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text('No performance data yet',
               style: TextStyle(

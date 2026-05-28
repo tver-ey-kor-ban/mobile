@@ -78,8 +78,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   ? _buildEmpty()
                   : ListView.builder(
                       itemCount: _notifications.length,
-                      itemBuilder: (_, i) =>
-                          _buildItem(_notifications[i]),
+                      itemBuilder: (_, i) => _buildItem(_notifications[i]),
                     ),
             ),
     );
@@ -106,9 +105,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return InkWell(
       onTap: () => _markRead(n),
       child: Container(
-        color: n.isUnread
-            ? Colors.red.shade50
-            : Colors.transparent,
+        color: n.isUnread ? Colors.red.shade50 : Colors.transparent,
         child: ListTile(
           leading: Container(
             width: 44,
@@ -117,14 +114,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
               color: _typeColor(n.type).withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(_typeIcon(n.type),
-                color: _typeColor(n.type), size: 22),
+            child: Icon(_typeIcon(n.type), color: _typeColor(n.type), size: 22),
           ),
           title: Text(
             n.title,
             style: TextStyle(
-              fontWeight:
-                  n.isUnread ? FontWeight.bold : FontWeight.normal,
+              fontWeight: n.isUnread ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           subtitle: Column(
@@ -136,8 +131,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   style: const TextStyle(fontSize: 13)),
               const SizedBox(height: 4),
               Text(_formatDate(n.createdAt),
-                  style: TextStyle(
-                      fontSize: 11, color: Colors.grey.shade500)),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
             ],
           ),
           trailing: n.isUnread

@@ -21,17 +21,19 @@ class MechanicApiService {
     return [];
   }
 
-  // Pending Bookings
+  // Pending Bookings — API returns { total, page, limit, items: [...] }
   Future<Map<String, dynamic>> getPendingBookings(int shopId) async {
-    final response =
-        await _apiClient.get(ApiConstants.pendingBookings(shopId));
+    final response = await _apiClient.get(ApiConstants.pendingBookings(shopId));
     if (response.isSuccess) {
       final data = response.data;
-      final bookingsList = (data['bookings'] as List<dynamic>? ?? [])
+      // "items" is the paginated envelope key; fall back to legacy keys
+      final raw = data['items'] ?? data['bookings'] ?? data['data'] ?? [];
+      final bookingsList = (raw as List<dynamic>)
+          .whereType<Map<String, dynamic>>()
           .map((e) => MechanicBookingModel.fromJson(e))
           .toList();
       return {
-        'count': data['count'] ?? bookingsList.length,
+        'count': data['total'] ?? data['count'] ?? bookingsList.length,
         'bookings': bookingsList,
       };
     }
@@ -39,8 +41,7 @@ class MechanicApiService {
   }
 
   // Booking detail
-  Future<MechanicBookingModel?> getBookingDetail(
-      int shopId, int apptId) async {
+  Future<MechanicBookingModel?> getBookingDetail(int shopId, int apptId) async {
     final response = await _apiClient
         .get(ApiConstants.mechanicBookingDetail(shopId, apptId));
     if (response.isSuccess) {
@@ -50,8 +51,7 @@ class MechanicApiService {
   }
 
   // Accept booking
-  Future<bool> acceptBooking(int shopId, int apptId,
-      {String? notes}) async {
+  Future<bool> acceptBooking(int shopId, int apptId, {String? notes}) async {
     final response = await _apiClient.post(
       ApiConstants.mechanicBookingAction(shopId, apptId),
       body: {'action': 'accept', if (notes != null) 'notes': notes},
@@ -70,8 +70,7 @@ class MechanicApiService {
 
   // Today's bookings
   Future<List<MechanicBookingModel>> getTodayBookings(int shopId) async {
-    final response =
-        await _apiClient.get(ApiConstants.todayBookings(shopId));
+    final response = await _apiClient.get(ApiConstants.todayBookings(shopId));
     if (response.isSuccess) {
       final data = response.data;
       final list = data is List ? data : (data['bookings'] ?? []);
@@ -82,14 +81,17 @@ class MechanicApiService {
     return [];
   }
 
-  // Pending Orders
+  // Pending Orders — API returns { total, page, limit, items: [...] }
   Future<List<MechanicOrderModel>> getPendingOrders(int shopId) async {
-    final response =
-        await _apiClient.get(ApiConstants.pendingOrders(shopId));
+    final response = await _apiClient.get(ApiConstants.pendingOrders(shopId));
     if (response.isSuccess) {
       final data = response.data;
-      final list = data is List ? data : (data['orders'] ?? []);
-      return (list as List)
+      // "items" is the paginated envelope key; fall back to legacy keys
+      final raw = data is List
+          ? data
+          : (data['items'] ?? data['orders'] ?? data['data'] ?? []);
+      return (raw as List)
+          .whereType<Map<String, dynamic>>()
           .map((e) => MechanicOrderModel.fromJson(e))
           .toList();
     }
@@ -120,8 +122,7 @@ class MechanicApiService {
 
   // My Performance
   Future<Map<String, dynamic>?> getMyPerformance(int shopId) async {
-    final response =
-        await _apiClient.get(ApiConstants.myPerformance(shopId));
+    final response = await _apiClient.get(ApiConstants.myPerformance(shopId));
     if (response.isSuccess) return Map<String, dynamic>.from(response.data);
     return null;
   }
@@ -132,5 +133,46 @@ class MechanicApiService {
         await _apiClient.get(ApiConstants.shopMechanicsPerformance(shopId));
     if (response.isSuccess) return Map<String, dynamic>.from(response.data);
     return null;
+  }
+
+  // Shop statistics (owner/mechanic)
+  Future<Map<String, dynamic>?> getShopStatistics(int shopId) async {
+    final response = await _apiClient.get(ApiConstants.shopStatistics(shopId));
+    if (response.isSuccess) return Map<String, dynamic>.from(response.data);
+    return null;
+  }
+
+  // Lightweight pending counts for dashboard badges
+  Future<int> getPendingBookingCount(int shopId) async {
+    final response = await _apiClient.get(
+      ApiConstants.pendingBookings(shopId),
+      queryParams: {'page': 1, 'limit': 1},
+    );
+    if (response.isSuccess) {
+      final data = response.data;
+      return (data['total'] ?? data['count'] ?? 0) as int;
+    }
+    return 0;
+  }
+
+  Future<int> getPendingOrderCount(int shopId) async {
+    final response = await _apiClient.get(
+      ApiConstants.pendingOrders(shopId),
+      queryParams: {'page': 1, 'limit': 1},
+    );
+    if (response.isSuccess) {
+      final data = response.data;
+      return (data['total'] ?? data['count'] ?? 0) as int;
+    }
+    return 0;
+  }
+
+  Future<int> getTodayBookingCount(int shopId) async {
+    final response = await _apiClient.get(ApiConstants.todayBookings(shopId));
+    if (response.isSuccess) {
+      final data = response.data;
+      return (data['count'] ?? 0) as int;
+    }
+    return 0;
   }
 }

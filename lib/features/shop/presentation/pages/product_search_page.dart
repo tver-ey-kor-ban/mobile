@@ -4,11 +4,10 @@ import 'package:provider/provider.dart';
 import '../../../../shared/services/auth_service.dart';
 import '../../../../shared/widgets/custom_bottom_nav.dart';
 import '../../data/models/shop_model.dart';
-import '../../data/models/browse_models.dart';
 import '../../services/shop_api_service.dart';
-import '../../services/browse_api_service.dart';
+import '../../../search/data/models/search_result_model.dart';
+import '../../../search/services/global_search_service.dart';
 import 'shop_products_page.dart';
-import '../widgets/item_detail_sheet.dart';
 
 class ProductSearchPage extends StatefulWidget {
   const ProductSearchPage({super.key});
@@ -20,7 +19,7 @@ class ProductSearchPage extends StatefulWidget {
 class _ProductSearchPageState extends State<ProductSearchPage>
     with SingleTickerProviderStateMixin {
   final ShopApiService _shopService = ShopApiService();
-  final BrowseApiService _browseService = BrowseApiService();
+  final GlobalSearchService _searchService = GlobalSearchService();
   final TextEditingController _searchCtrl = TextEditingController();
   late final TabController _tabController;
   Timer? _debounce;
@@ -28,9 +27,8 @@ class _ProductSearchPageState extends State<ProductSearchPage>
   List<ShopResponse> _shops = [];
   bool _loadingShops = true;
   bool _searching = false;
-  List<_ShopResults> _results = [];
+  SearchResponse? _searchResult;
   String _lastQuery = '';
-
   bool _didInit = false;
 
   @override
@@ -46,10 +44,7 @@ class _ProductSearchPageState extends State<ProductSearchPage>
     if (_didInit) return;
     _didInit = true;
     final auth = context.read<AuthService>();
-    if (auth.token != null) {
-      _shopService.setAuthToken(auth.token!);
-      _browseService.setAuthToken(auth.token!);
-    }
+    if (auth.token != null) _shopService.setAuthToken(auth.token!);
     _loadShops();
   }
 
@@ -79,14 +74,14 @@ class _ProductSearchPageState extends State<ProductSearchPage>
     setState(() {});
     if (value.isEmpty) {
       setState(() {
-        _results = [];
+        _searchResult = null;
         _lastQuery = '';
       });
       return;
     }
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      if (value.trim().length >= 2) _runSearch(value.trim());
+      if (value.trim().length >= 1) _runSearch(value.trim());
     });
   }
 
@@ -95,44 +90,28 @@ class _ProductSearchPageState extends State<ProductSearchPage>
     _lastQuery = query;
     setState(() => _searching = true);
 
-    final futures = _shops.map((shop) async {
-      try {
-        final p = await _browseService.getShopProducts(shop.id);
-        final s = await _browseService.getShopServices(shop.id);
-        final q = query.toLowerCase();
-        final products = p.products.where((item) =>
-            item.name.toLowerCase().contains(q) ||
-            (item.description?.toLowerCase().contains(q) ?? false) ||
-            (item.category?.toLowerCase().contains(q) ?? false) ||
-            (item.brand?.toLowerCase().contains(q) ?? false)).toList();
-        final services = s.services.where((item) =>
-            item.name.toLowerCase().contains(q) ||
-            (item.description?.toLowerCase().contains(q) ?? false)).toList();
-        if (products.isEmpty && services.isEmpty) return null;
-        return _ShopResults(shop: shop, products: products, services: services);
-      } catch (_) {
-        return null;
-      }
-    });
-
-    final all = await Future.wait(futures);
+    final result = await _searchService.search(query: query, limit: 50);
     if (!mounted) return;
     setState(() {
-      _results = all.whereType<_ShopResults>().toList();
+      _searchResult = result;
       _searching = false;
     });
   }
 
-  List<ShopProduct> get _allProducts =>
-      _results.expand((r) => r.products).toList();
-  List<ShopServiceItem> get _allServices =>
-      _results.expand((r) => r.services).toList();
-  int get _totalResults => _allProducts.length + _allServices.length;
+  List<SearchResultItem> get _allItems => _searchResult?.items ?? [];
+  List<SearchResultItem> get _products =>
+      _allItems.where((i) => i.isProduct).toList();
+  List<SearchResultItem> get _services =>
+      _allItems.where((i) => i.isService).toList();
+  int get _totalResults => _searchResult?.total ?? 0;
 
   @override
   Widget build(BuildContext context) {
     final hasQuery = _searchCtrl.text.isNotEmpty;
-    final showTabs = hasQuery && !_searching && _lastQuery.isNotEmpty;
+    final showTabs = hasQuery &&
+        !_searching &&
+        _lastQuery.isNotEmpty &&
+        _allItems.isNotEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
@@ -160,12 +139,11 @@ class _ProductSearchPageState extends State<ProductSearchPage>
               onChanged: _onSearchChanged,
               onSubmitted: (v) {
                 _debounce?.cancel();
-                if (v.trim().length >= 2) _runSearch(v.trim());
+                if (v.trim().isNotEmpty) _runSearch(v.trim());
               },
               decoration: InputDecoration(
-                hintText: 'Search products, services, brands...',
-                hintStyle:
-                    TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                hintText: 'Search products & services across all shops...',
+                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
                 prefixIcon:
                     Icon(Icons.search, color: Colors.red.shade400, size: 22),
                 suffixIcon: _searchCtrl.text.isNotEmpty
@@ -175,7 +153,7 @@ class _ProductSearchPageState extends State<ProductSearchPage>
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() {
-                            _results = [];
+                            _searchResult = null;
                             _lastQuery = '';
                           });
                         },
@@ -192,7 +170,7 @@ class _ProductSearchPageState extends State<ProductSearchPage>
             ),
           ),
 
-          // Tabs (only visible when results are ready)
+          // Tabs — visible only when results are loaded
           if (showTabs)
             Container(
               color: Colors.white,
@@ -202,12 +180,12 @@ class _ProductSearchPageState extends State<ProductSearchPage>
                 unselectedLabelColor: Colors.grey,
                 indicatorColor: Colors.red.shade700,
                 indicatorWeight: 2.5,
-                labelStyle: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600),
+                labelStyle:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                 tabs: [
                   Tab(text: 'All ($_totalResults)'),
-                  Tab(text: 'Products (${_allProducts.length})'),
-                  Tab(text: 'Services (${_allServices.length})'),
+                  Tab(text: 'Products (${_products.length})'),
+                  Tab(text: 'Services (${_services.length})'),
                 ],
               ),
             ),
@@ -222,38 +200,31 @@ class _ProductSearchPageState extends State<ProductSearchPage>
     if (!hasQuery) return _buildShopBrowser();
 
     if (_searching) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(
-                color: Colors.red, strokeWidth: 2.5),
-            const SizedBox(height: 16),
-            Text(
-              'Searching across ${_shops.length} shops...',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
-            ),
+            CircularProgressIndicator(color: Colors.red, strokeWidth: 2.5),
+            SizedBox(height: 16),
+            Text('Searching...',
+                style: TextStyle(color: Colors.grey, fontSize: 13)),
           ],
         ),
       );
     }
 
-    if (_lastQuery.isNotEmpty && _results.isEmpty) {
+    if (_lastQuery.isNotEmpty && (_searchResult == null || _allItems.isEmpty)) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.search_off, size: 56, color: Colors.grey.shade300),
             const SizedBox(height: 12),
-            Text(
-              'No results for "$_lastQuery"',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-            ),
+            Text('No results for "$_lastQuery"',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
             const SizedBox(height: 6),
-            Text(
-              'Try a different search term',
-              style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
-            ),
+            Text('Try a different search term',
+                style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
           ],
         ),
       );
@@ -264,91 +235,38 @@ class _ProductSearchPageState extends State<ProductSearchPage>
     return TabBarView(
       controller: _tabController,
       children: [
-        _buildGroupedResults(),
-        _buildFlatList<ShopProduct>(
-          items: _allProducts,
-          shopFor: (p) =>
-              _results.firstWhere((r) => r.products.contains(p)).shop,
-          builder: (p, shop) => _ProductCard(product: p, shop: shop),
-          emptyMessage: 'No products found',
-          emptyIcon: Icons.inventory_2_outlined,
-        ),
-        _buildFlatList<ShopServiceItem>(
-          items: _allServices,
-          shopFor: (s) =>
-              _results.firstWhere((r) => r.services.contains(s)).shop,
-          builder: (s, shop) => _ServiceCard(service: s, shop: shop),
-          emptyMessage: 'No services found',
-          emptyIcon: Icons.build_outlined,
-        ),
+        _buildResultList(_allItems),
+        _buildResultList(_products),
+        _buildResultList(_services),
       ],
     );
   }
 
-  Widget _buildGroupedResults() {
-    final widgets = <Widget>[];
-    for (final r in _results) {
-      widgets.add(_ShopSectionHeader(shop: r.shop));
-      for (final p in r.products) {
-        widgets.add(Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-          child: _ProductCard(product: p, shop: r.shop),
-        ));
-      }
-      for (final s in r.services) {
-        widgets.add(Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-          child: _ServiceCard(service: s, shop: r.shop),
-        ));
-      }
-    }
-    return ListView(
-        padding: const EdgeInsets.only(bottom: 16), children: widgets);
-  }
-
-  Widget _buildFlatList<T>({
-    required List<T> items,
-    required ShopResponse Function(T) shopFor,
-    required Widget Function(T, ShopResponse) builder,
-    required String emptyMessage,
-    required IconData emptyIcon,
-  }) {
+  Widget _buildResultList(List<SearchResultItem> items) {
     if (items.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(emptyIcon, size: 56, color: Colors.grey.shade300),
-            const SizedBox(height: 12),
-            Text(emptyMessage,
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
-          ],
-        ),
+        child: Text('No results',
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
       );
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: items.length,
       separatorBuilder: (_, __) => const SizedBox(height: 10),
-      itemBuilder: (_, i) {
-        try {
-          return builder(items[i], shopFor(items[i]));
-        } catch (_) {
-          return const SizedBox.shrink();
-        }
-      },
+      itemBuilder: (_, i) => _SearchResultCard(item: items[i]),
     );
   }
 
   Widget _buildShopBrowser() {
     if (_loadingShops) {
       return const Center(
-          child: CircularProgressIndicator(color: Colors.red, strokeWidth: 2.5));
+          child:
+              CircularProgressIndicator(color: Colors.red, strokeWidth: 2.5));
     }
     if (_shops.isEmpty) {
       return Center(
-        child: Text('No shops available',
-            style: TextStyle(color: Colors.grey.shade500)));
+          child: Text('No shops available',
+              style: TextStyle(color: Colors.grey.shade500)));
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,42 +301,130 @@ class _ProductSearchPageState extends State<ProductSearchPage>
   }
 }
 
-class _ShopResults {
-  final ShopResponse shop;
-  final List<ShopProduct> products;
-  final List<ShopServiceItem> services;
-  _ShopResults(
-      {required this.shop, required this.products, required this.services});
-}
+// ---------- Search result card ----------
 
-// ---------- Shared sub-widgets ----------
-
-class _ShopSectionHeader extends StatelessWidget {
-  final ShopResponse shop;
-  const _ShopSectionHeader({required this.shop});
+class _SearchResultCard extends StatelessWidget {
+  final SearchResultItem item;
+  const _SearchResultCard({required this.item});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+    final isProduct = item.isProduct;
+    final iconColor = isProduct ? Colors.blue.shade400 : Colors.orange.shade400;
+    final bgColor = isProduct ? Colors.blue.shade50 : Colors.orange.shade50;
+    final icon = isProduct ? Icons.inventory_2_outlined : Icons.build_outlined;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2))
+        ],
+      ),
       child: Row(
         children: [
-          const Icon(Icons.store_rounded, size: 16, color: Colors.red),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(shop.name,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 14)),
+          _SearchThumb(
+            imageUrl: item.imageUrl,
+            bgColor: bgColor,
+            icon: icon,
+            iconColor: iconColor,
           ),
-          if (shop.address != null)
-            Text(shop.address!,
-                style:
-                    TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(item.name,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 14)),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isProduct
+                            ? Colors.blue.shade50
+                            : Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        isProduct ? 'Product' : 'Service',
+                        style: TextStyle(
+                            fontSize: 9,
+                            color: iconColor,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(Icons.store_rounded,
+                        size: 11, color: Colors.grey.shade400),
+                    const SizedBox(width: 3),
+                    Expanded(
+                      child: Text(
+                        item.shop.name,
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey.shade500),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (item.shop.address != null)
+                      Text(
+                        item.shop.address!,
+                        style: TextStyle(
+                            fontSize: 10, color: Colors.grey.shade400),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text('\$${item.price.toStringAsFixed(2)}',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Colors.red.shade700)),
+                    if (item.rating != null) ...[
+                      const SizedBox(width: 8),
+                      Icon(Icons.star_rounded,
+                          size: 13, color: Colors.amber.shade600),
+                      const SizedBox(width: 2),
+                      Text(item.rating!.toStringAsFixed(1),
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500)),
+                      if (item.ratingCount > 0)
+                        Text(' (${item.ratingCount})',
+                            style: TextStyle(
+                                fontSize: 10, color: Colors.grey.shade400)),
+                    ],
+                    const Spacer(),
+                    _AvailabilityDot(available: item.isAvailable),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
+
+// ---------- Shop browser card ----------
 
 class _ShopBrowseCard extends StatelessWidget {
   final ShopResponse shop;
@@ -480,199 +486,42 @@ class _ShopBrowseCard extends StatelessWidget {
   }
 }
 
-class _ProductCard extends StatelessWidget {
-  final ShopProduct product;
-  final ShopResponse shop;
-  const _ProductCard({required this.product, required this.shop});
+class _SearchThumb extends StatelessWidget {
+  final String? imageUrl;
+  final Color bgColor;
+  final IconData icon;
+  final Color iconColor;
+
+  const _SearchThumb({
+    required this.imageUrl,
+    required this.bgColor,
+    required this.icon,
+    required this.iconColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => showProductDetail(context, product, shop),
-      child: Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
-        ],
+    final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: 56,
+        height: 56,
+        child: hasImage
+            ? Image.network(
+                imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _fallback(),
+              )
+            : _fallback(),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(Icons.inventory_2_outlined,
-                color: Colors.blue.shade400, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(product.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14)),
-                if (product.brand != null || product.category != null)
-                  Text(
-                    [product.brand, product.category]
-                        .whereType<String>()
-                        .join(' · '),
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade400),
-                  ),
-                if (product.description != null)
-                  Text(product.description!,
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text('\$${product.price.toStringAsFixed(2)}',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Colors.red.shade700)),
-                    const Spacer(),
-                    _AvailabilityDot(available: product.isAvailable),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: product.isAvailable
-                ? () => showProductDetail(context, product, shop)
-                : null,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: product.isAvailable
-                    ? Colors.red.shade700
-                    : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(Icons.shopping_cart_outlined,
-                  size: 18,
-                  color: product.isAvailable
-                      ? Colors.white
-                      : Colors.grey.shade400),
-            ),
-          ),
-        ],
-      ),
-    ),
     );
   }
-}
 
-class _ServiceCard extends StatelessWidget {
-  final ShopServiceItem service;
-  final ShopResponse shop;
-  const _ServiceCard({required this.service, required this.shop});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => showServiceDetail(context, service, shop),
-      child: Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.orange.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(Icons.build_outlined,
-                color: Colors.orange.shade400, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(service.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14)),
-                if (service.description != null)
-                  Text(service.description!,
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text('\$${service.price.toStringAsFixed(2)}',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Colors.red.shade700)),
-                    if (service.estimatedMinutes != null) ...[
-                      const SizedBox(width: 8),
-                      Icon(Icons.schedule_outlined,
-                          size: 12, color: Colors.grey.shade400),
-                      const SizedBox(width: 2),
-                      Text('${service.estimatedMinutes}m',
-                          style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade500)),
-                    ],
-                    const Spacer(),
-                    _AvailabilityDot(available: service.isAvailable),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: service.isAvailable
-                ? () => showServiceDetail(context, service, shop)
-                : null,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: service.isAvailable
-                    ? Colors.red.shade700
-                    : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(Icons.calendar_today_outlined,
-                  size: 18,
-                  color: service.isAvailable
-                      ? Colors.white
-                      : Colors.grey.shade400),
-            ),
-          ),
-        ],
-      ),
-    ),
-    );
-  }
+  Widget _fallback() => Container(
+        color: bgColor,
+        child: Icon(icon, color: iconColor, size: 26),
+      );
 }
 
 class _AvailabilityDot extends StatelessWidget {
@@ -692,8 +541,7 @@ class _AvailabilityDot extends StatelessWidget {
           available ? 'Available' : 'Unavailable',
           style: TextStyle(
               fontSize: 11,
-              color:
-                  available ? Colors.green.shade700 : Colors.grey.shade500),
+              color: available ? Colors.green.shade700 : Colors.grey.shade500),
         ),
       ],
     );

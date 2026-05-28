@@ -73,6 +73,5 @@ class RepairProgressModel {
   ];
 
   int get stageIndex => stages.indexOf(stage);
-  double get progress =>
-      stages.isEmpty ? 0 : (stageIndex + 1) / stages.length;
+  double get progress => stages.isEmpty ? 0 : (stageIndex + 1) / stages.length;
 }

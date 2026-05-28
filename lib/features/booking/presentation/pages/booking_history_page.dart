@@ -96,8 +96,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) =>
-                    AppointmentDetailPage(appointmentId: appt.id),
+                builder: (_) => AppointmentDetailPage(appointmentId: appt.id),
               ),
             ),
             child: Padding(
@@ -112,8 +111,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
                             child: Text(
                               appt.serviceName ?? 'Appointment #${appt.id}',
                               style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold),
+                                  fontSize: 15, fontWeight: FontWeight.bold),
                             ),
                           ),
                           _statusChip(status, statusColor),
@@ -150,24 +148,19 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Order #${order['id'] ?? ''}',
-                            style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold)),
-                        _statusChip(status, statusColor),
-                      ]),
-                  const SizedBox(height: 8),
-                  _row(Icons.attach_money,
-                      '\$${total.toStringAsFixed(2)}'),
-                  _row(Icons.calendar_today_outlined,
-                      _formatDate(order['created_at'] ?? '')),
-                ]),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text('Order #${order['id'] ?? ''}',
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold)),
+                _statusChip(status, statusColor),
+              ]),
+              const SizedBox(height: 8),
+              _row(Icons.attach_money, '\$${total.toStringAsFixed(2)}'),
+              _row(Icons.calendar_today_outlined,
+                  _formatDate(order['created_at'] ?? '')),
+            ]),
           ),
         );
       },

@@ -313,7 +313,8 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                 if (!vehicle.isPrimary)
                   TextButton.icon(
                     onPressed: () => _setPrimaryVehicle(vehicle.id),
-                    icon: Icon(Icons.star_outline, color: Colors.amber.shade700),
+                    icon:
+                        Icon(Icons.star_outline, color: Colors.amber.shade700),
                     label: Text(
                       'Set Primary',
                       style: TextStyle(color: Colors.amber.shade700),
@@ -387,8 +388,8 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Vehicle'),
-        content: Text(
-            'Are you sure you want to delete ${vehicle.displayName}?'),
+        content:
+            Text('Are you sure you want to delete ${vehicle.displayName}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

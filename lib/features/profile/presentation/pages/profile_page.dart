@@ -11,6 +11,9 @@ import '../../../repair_progress/presentation/pages/my_repairs_page.dart';
 import '../../../quotations/presentation/pages/my_quotations_page.dart';
 import '../../../invoices/presentation/pages/my_invoices_page.dart';
 import '../../../mechanic/presentation/pages/mechanic_dashboard_page.dart';
+import '../../../chat/presentation/pages/chat_rooms_page.dart';
+import 'edit_profile_page.dart';
+import 'help_support_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -204,6 +207,15 @@ class ProfilePage extends StatelessWidget {
 
                 // Common
                 _buildMenuTile(
+                  icon: Icons.chat_bubble_outline,
+                  title: 'My Chats',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ChatRoomsPage()),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                _buildMenuTile(
                   icon: Icons.notifications_outlined,
                   title: 'Notifications',
                   onTap: () => Navigator.push(
@@ -216,17 +228,19 @@ class ProfilePage extends StatelessWidget {
                 _buildMenuTile(
                   icon: Icons.person_outline,
                   title: 'Edit Profile',
-                  onTap: () {
-                    // TODO: Edit profile form
-                  },
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const EditProfilePage()),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 _buildMenuTile(
                   icon: Icons.help_outline,
                   title: 'Help & Support',
-                  onTap: () {
-                    // TODO: Help page
-                  },
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 SizedBox(

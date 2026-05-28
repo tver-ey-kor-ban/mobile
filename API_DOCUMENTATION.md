@@ -1,1389 +1,797 @@
-# Garage Management — API Documentation
+# API Documentation — Garage Management Backend
 
-## Quick Reference
-
-| Symbol | Meaning |
-|--------|---------|
-| 🔒 | Requires `Authorization: Bearer <token>` |
-| 👑 | Admin token required (`is_superuser = true`) |
-| 🏪 | Shop owner token required |
-| 🔧 | Shop owner **or** mechanic token required |
-
-**Base URL (local):** `http://localhost:8000/api/v1`  
+**Live base URL:** `https://backend-1-s2fl.onrender.com/api/v1`  
+**Local base URL:** `http://localhost:8000/api/v1`  
 **Interactive docs:** `http://localhost:8000/docs`
 
-**Date format:** ISO 8601 — `2024-01-15T10:30:00`  
-**Price format:** Decimal — `39.99`
-
 ---
 
-## Table of Contents
+## Conventions
 
-1. [Authentication](#1-authentication)
-2. [Shops](#2-shops)
-3. [Shop Products](#3-shop-products)
-4. [Shop Services](#4-shop-services)
-5. [Categories](#5-categories)
-6. [Vehicle Database (Public)](#6-vehicle-database-public)
-7. [Customer Vehicles](#7-customer-vehicles)
-8. [Browse Shop (Public)](#8-browse-shop-public)
-9. [Global Search (Public)](#9-global-search-public)
-10. [Unified Booking](#10-unified-booking)
-11. [Customer Appointments](#11-customer-appointments)
-12. [Customer Product Orders](#12-customer-product-orders)
-13. [Mechanic / Shop — Bookings](#13-mechanic--shop--bookings)
-14. [Mechanic / Shop — Orders](#14-mechanic--shop--orders)
-15. [Notifications](#15-notifications)
-16. [Quotations](#16-quotations)
-17. [Repair Progress](#17-repair-progress)
-18. [Invoices](#18-invoices)
-19. [Chat / Support](#19-chat--support)
-20. [Ratings](#20-ratings)
-21. [Mechanic Performance](#21-mechanic-performance)
-22. [Admin](#22-admin)
-23. [Error Format & Status Codes](#error-format--status-codes)
+### Auth icons
+| Icon | Meaning |
+|------|---------|
+| 🌐 | Public — no token required |
+| 🔒 | Any authenticated user |
+| 🔧 | Shop member (owner **or** mechanic) |
+| 👑 | Shop owner only |
+| 🛡️ | Platform admin (`is_superuser=true`) |
 
----
-
-## 1. Authentication
-
-### Register
-`POST /auth/register`
-
-**Request**
+### Paginated envelope
+All list endpoints return:
 ```json
-{
-  "email": "user@example.com",
-  "username": "newuser",
-  "password": "password123",
-  "full_name": "John Doe",
-  "roles": "user",
-  "is_active": true
-}
+{ "items": [...], "total": 100, "page": 1, "limit": 20 }
 ```
+Standard query params: `?page=1&limit=20` (limit max varies per endpoint).
 
-**Response** `201`
+### Appointment statuses
+`pending` · `confirmed` · `in_progress` · `completed` · `cancelled` · `rejected`
+
+### Order statuses
+`pending` · `confirmed` · `processing` · `ready` · `completed` · `cancelled`
+
+### Error shape
 ```json
-{
-  "id": 1,
-  "email": "user@example.com",
-  "username": "newuser",
-  "full_name": "John Doe",
-  "roles": "user",
-  "is_active": true,
-  "created_at": "2024-01-01T00:00:00"
-}
+{ "detail": "Human-readable error message" }
 ```
 
 ---
 
-### Login
-`POST /auth/login`
+## Authentication (`/auth`)
 
-**Content-Type:** `application/x-www-form-urlencoded`
+### `POST /auth/register`  🌐
+Register a new user.
 
-**Body:** `username=customer1&password=customer123`
+**Body:**
+```json
+{ "email": "user@example.com", "username": "user1", "password": "secret", "full_name": "Full Name" }
+```
+**Response `200`:** `UserRead`
 
-**Response** `200`
+---
+
+### `POST /auth/login`  🌐
+Login with username/password (form-encoded).
+
+**Body (form):** `username`, `password`
+
+**Response `200`:**
 ```json
 {
-  "access_token": "eyJhbGci...",
-  "refresh_token": "eyJhbGci...",
+  "access_token": "eyJ...",
+  "refresh_token": "eyJ...",
   "token_type": "bearer"
 }
 ```
+Access token expires in **30 minutes**. Refresh token expires in **7 days**.
 
 ---
 
-### Refresh Token
-`POST /auth/refresh`
+### `GET /auth/me`  🔒
+Get the current authenticated user's profile.
 
-**Content-Type:** `application/json`
-
-**Request body:**
-```json
-{ "refresh_token": "eyJhbGci..." }
-```
-
-**Response** `200` — returns a new access token only (refresh token is **not** rotated):
-```json
-{
-  "access_token": "eyJhbGci...",
-  "token_type": "bearer"
-}
-```
-
-**Error:** `401 Unauthorized` when the refresh token is expired, revoked, or invalid.
-
-**Token expiry:**
-- Access token: **30 minutes**
-- Refresh token: **7 days**
+**Response `200`:** `UserResponse`
 
 ---
 
-### Get Current User
-`GET /auth/me` 🔒
+### `GET /auth/me/roles`  🔒
+Get current user's roles including all active shop memberships.
 
+**Response `200`:**
 ```json
 {
-  "id": 1,
-  "email": "user@example.com",
-  "username": "customer1",
-  "full_name": "Test Customer",
-  "roles": "user",
-  "is_active": true
+  "username": "owner1",
+  "roles": ["user", "owner"],
+  "is_superuser": false,
+  "shop_roles": [
+    { "shop_id": 1, "role": "owner" },
+    { "shop_id": 3, "role": "mechanic" }
+  ]
 }
 ```
+> `shop_roles` is derived live from `UserShop` records — use this instead of a separate `GET /shops/my-shops` call to determine role on login.
 
 ---
 
-### Get My Roles
-`GET /auth/me/roles` 🔒
+### `POST /auth/refresh`  🌐
+Exchange a refresh token for a new access token.
 
+**Body:**
 ```json
-{
-  "username": "customer1",
-  "roles": ["user"],
-  "is_superuser": false
-}
+{ "refresh_token": "eyJ..." }
+```
+**Response `200`:** `Token` (new access token; refresh token is unchanged)
+
+---
+
+### `POST /auth/logout`  🔒
+Revoke a refresh token.
+
+**Body:**
+```json
+{ "refresh_token": "eyJ..." }
+```
+**Response `200`:** `{ "message": "Successfully logged out" }`
+
+---
+
+### `POST /auth/logout-all`  🔒
+Revoke all refresh tokens for the current user (log out all devices).
+
+**Response `200`:** `{ "message": "...", "revoked_tokens": 3 }`
+
+---
+
+## Shops (`/shops`)
+
+### `GET /shops`  🌐
+List all active shops (paginated).
+
+**Query params:** `page`, `limit` (max 100)
+
+**Response `200`:**
+```json
+{ "items": [ShopRead], "total": 10, "page": 1, "limit": 20 }
 ```
 
 ---
 
-### Logout
-`POST /auth/logout` 🔒
+### `POST /shops`  🔒
+Create a new shop. The authenticated user automatically becomes owner.
 
+**Body:** `ShopCreate` (`name`, `description?`, `address?`, `phone?`, `email?`)
+
+**Response `201`:** `ShopRead`
+
+---
+
+### `GET /shops/my-shops`  🔒
+List all shops where the current user is an active member (owner or mechanic).
+
+**Response `200`:**
 ```json
-{ "refresh_token": "eyJhbGci..." }
+[{ "shop_id": 1, "shop_name": "Garage A", "role": "owner", "is_active": true }]
 ```
 
 ---
 
-### Logout All Devices
-`POST /auth/logout-all` 🔒
+### `GET /shops/{shop_id}`  🌐
+Get public details for a specific shop.
+
+**Response `200`:** `ShopRead` · `404` if not found or inactive
 
 ---
 
-## 2. Shops
+### `PUT /shops/{shop_id}`  👑
+Update shop details. Owner only.
 
-### List All Shops
-`GET /shops` — **Public, no token required**
-
-| Query Param | Type | Default | Description |
-|-------------|------|---------|-------------|
-| `page` | integer | `1` | Page number |
-| `limit` | integer | `20` (max `100`) | Items per page |
-
-```json
-{
-  "items": [
-    {
-      "id": 1,
-      "name": "Test Garage",
-      "address": "123 Test Street",
-      "phone": "+1234567890",
-      "email": "garage@test.com",
-      "is_active": true
-    }
-  ],
-  "total": 42,
-  "page": 1,
-  "limit": 20
-}
-```
+**Body:** `ShopCreate`  
+**Response `200`:** `ShopRead`
 
 ---
 
-### Get Shop Details
-`GET /shops/{shop_id}` — **Public, no token required**
+### `DELETE /shops/{shop_id}`  👑
+Soft-delete a shop (`is_active = false`). Owner only.
+
+**Response `200`:** `{ "message": "Shop deleted successfully" }`
 
 ---
 
-### Create Shop
-`POST /shops` 🔒
+### `GET /shops/{shop_id}/statistics`  🔧
+Get operational statistics for a shop.
 
-```json
-{
-  "name": "My Garage",
-  "address": "456 Main St",
-  "phone": "+1234567890",
-  "email": "shop@example.com",
-  "description": "Best garage in town"
-}
-```
-
----
-
-### Update Shop
-`PUT /shops/{shop_id}` 🔒 🏪
-
-Same body as create.
-
----
-
-### Delete Shop
-`DELETE /shops/{shop_id}` 🔒 🏪
-
----
-
-### My Shops
-`GET /shops/my-shops` 🔒
-
-Returns all shops where the current user is owner or mechanic.
-
-```json
-[
-  { "shop_id": 1, "shop_name": "Test Garage", "role": "owner", "is_active": true }
-]
-```
-
----
-
-### Shop Members
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/shops/{shop_id}/members` | 🔒 🔧 | List all members |
-| `POST` | `/shops/{shop_id}/members` | 🔒 🏪 | Add member |
-| `PUT` | `/shops/{shop_id}/members/{user_id}/role` | 🔒 🏪 | Change role |
-| `DELETE` | `/shops/{shop_id}/members/{user_id}` | 🔒 🏪 | Remove member |
-
-**Add Member request:**
-```json
-{ "user_id": 5, "shop_id": 1, "role": "mechanic" }
-```
-> `role` must be `"owner"` or `"mechanic"`.
-
----
-
-## 3. Shop Products
-
-> All write endpoints require shop owner. Read endpoints require shop member.
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/shops/{shop_id}/products` | 🔒 🏪 | Create product |
-| `GET` | `/shops/{shop_id}/products` | 🔒 🔧 | List products |
-| `GET` | `/shops/{shop_id}/products/{product_id}` | 🔒 🔧 | Get product |
-| `PUT` | `/shops/{shop_id}/products/{product_id}` | 🔒 🏪 | Update product |
-| `DELETE` | `/shops/{shop_id}/products/{product_id}` | 🔒 🏪 | Delete product |
-| `GET` | `/shops/{shop_id}/products/search` | 🔒 🔧 | Search products |
-| `GET` | `/shops/{shop_id}/products/by-service/{service_id}` | 🔒 🔧 | Products for a service |
-| `POST` | `/shops/{shop_id}/products/search-by-image` | 🔒 🔧 | Image search (upload) |
-
-**Create / Update request:**
-```json
-{
-  "name": "Synthetic Oil 5W-30",
-  "description": "Full synthetic motor oil",
-  "price": 29.99,
-  "stock_quantity": 50,
-  "category_id": 1,
-  "sku": "OIL-5W30"
-}
-```
-
----
-
-## 4. Shop Services
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/shops/{shop_id}/services` | 🔒 🏪 | Create service |
-| `GET` | `/shops/{shop_id}/services` | 🔒 🔧 | List services |
-| `GET` | `/shops/{shop_id}/services/{service_id}` | 🔒 🔧 | Get service |
-| `PUT` | `/shops/{shop_id}/services/{service_id}` | 🔒 🏪 | Update service |
-| `DELETE` | `/shops/{shop_id}/services/{service_id}` | 🔒 🏪 | Delete service |
-| `GET` | `/shops/{shop_id}/services/by-type` | 🔒 🔧 | Filter by type |
-
-**Create / Update request:**
-```json
-{
-  "name": "Oil Change",
-  "description": "Full oil change with filter",
-  "price": 39.99,
-  "duration_minutes": 30,
-  "service_type": "shop_based",
-  "mobile_service_fee": 0
-}
-```
-> `service_type`: `"shop_based"` · `"mobile"`
-
----
-
-## 5. Categories
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/categories` | 🔒 🏪 | Create category |
-| `GET` | `/categories` | Public | List root categories |
-| `GET` | `/categories/tree` | Public | Full nested tree |
-| `GET` | `/categories/{category_id}` | Public | Get category |
-| `GET` | `/categories/{category_id}/products` | Public | Products in category |
-| `PUT` | `/categories/{category_id}` | 🔒 🏪 | Update category |
-| `DELETE` | `/categories/{category_id}` | 🔒 🏪 | Delete category |
-| `GET` | `/categories/by-service/{service_id}` | Public | Categories for a service |
-| `POST` | `/categories/service-links` | 🔒 🏪 | Link category to service |
-
-**Create category request:**
-```json
-{
-  "name": "Engine Parts",
-  "description": "...",
-  "parent_id": null,
-  "shop_id": 1
-}
-```
-
----
-
-## 6. Vehicle Database (Public)
-
-No authentication required.
-
-### List Makes
-`GET /vehicles/makes`
-
-```json
-[
-  { "id": 1, "name": "Toyota", "country": "Japan" },
-  { "id": 2, "name": "Honda",  "country": "Japan" }
-]
-```
-
----
-
-### List Models by Make
-`GET /vehicles/makes/{make_id}/models`
-
-```json
-[
-  { "id": 1, "name": "Camry", "vehicle_type": "Sedan" }
-]
-```
-
----
-
-### List Years by Model
-`GET /vehicles/models/{model_id}/years`
-
-```json
-[
-  { "id": 1, "year": 2020 },
-  { "id": 2, "year": 2021 }
-]
-```
-
----
-
-### List Engines by Year
-`GET /vehicles/years/{year_id}/engines`
-
-```json
-[
-  {
-    "id": 1,
-    "engine_code": "2.5L 4-Cyl",
-    "displacement": "2.5L",
-    "cylinders": 4,
-    "fuel_type": "gasoline",
-    "power_hp": 203
-  }
-]
-```
-
----
-
-### Additional Vehicle Endpoints
-
-| Path | Description |
-|------|-------------|
-| `GET /vehicles/fuel-types` | List all fuel types |
-| `GET /vehicles/hierarchy` | Full make → model → year tree |
-| `GET /vehicles/search?q=camry` | Search vehicles by keyword |
-| `GET /vehicles/validate?make=Toyota&model=Camry&year=2020` | Validate a vehicle combo |
-
----
-
-## 7. Customer Vehicles
-
-### Add Vehicle
-`POST /my-vehicles` 🔒
-
-```json
-{
-  "make": "Toyota",
-  "model": "Camry",
-  "year": 2020,
-  "engine": "2.5L 4-Cyl",
-  "fuel_type": "gasoline",
-  "license_plate": "ABC-123",
-  "color": "Silver",
-  "mileage": 45000,
-  "is_primary": true
-}
-```
-
----
-
-### List My Vehicles
-`GET /my-vehicles` 🔒
-
-```json
-[
-  {
-    "id": 1,
-    "make": "Toyota",
-    "model": "Camry",
-    "year": 2020,
-    "license_plate": "ABC-123",
-    "is_primary": true
-  }
-]
-```
-
----
-
-### Other Vehicle Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/my-vehicles/{vehicle_id}` | Get one vehicle |
-| `PUT` | `/my-vehicles/{vehicle_id}` | Update vehicle |
-| `DELETE` | `/my-vehicles/{vehicle_id}` | Delete vehicle |
-| `GET` | `/my-vehicles/primary` | Get primary vehicle |
-| `POST` | `/my-vehicles/{vehicle_id}/set-primary` | Set as primary |
-| `POST` | `/my-vehicles/filter-products` | Find compatible products |
-
----
-
-## 8. Browse Shop (Public)
-
-No authentication required. All browse endpoints return paginated envelopes.
-
-### Browse Products
-`GET /customers/shops/{shop_id}/browse/products`
-
-| Query Param | Type | Description |
-|-------------|------|-------------|
-| `search` | string | Case-insensitive match on name/description *(optional)* |
-| `category_id` | integer | Filter by category *(optional)* |
-| `page` | integer | Default `1` |
-| `limit` | integer | Default `20` (max `100`) |
-
-```json
-{
-  "items": [
-    {
-      "id": 1,
-      "name": "Synthetic Oil 5W-30",
-      "description": "Full synthetic motor oil",
-      "price": 29.99,
-      "image_url": "...",
-      "thumbnail_url": "...",
-      "is_available": true,
-      "stock_quantity": 50,
-      "rating": 4.3,
-      "rating_count": 12
-    }
-  ],
-  "total": 42,
-  "page": 1,
-  "limit": 20
-}
-```
-
-### Browse Single Product
-`GET /customers/shops/{shop_id}/browse/products/{product_id}`
-
-Returns a single product object (same shape as items above).
-
----
-
-### Browse Services
-`GET /customers/shops/{shop_id}/browse/services`
-
-| Query Param | Type | Description |
-|-------------|------|-------------|
-| `search` | string | Case-insensitive match on name/description *(optional)* |
-| `page` | integer | Default `1` |
-| `limit` | integer | Default `20` (max `100`) |
-
-```json
-{
-  "items": [
-    {
-      "id": 1,
-      "name": "Oil Change",
-      "description": "Full oil change with filter",
-      "price": 39.99,
-      "estimated_duration_minutes": 30,
-      "service_type": "shop_based",
-      "image_url": "...",
-      "is_available": true,
-      "rating": 4.7,
-      "rating_count": 30
-    }
-  ],
-  "total": 8,
-  "page": 1,
-  "limit": 20
-}
-```
-
-> `service_type`: `"shop_based"` · `"mobile"` · `"pickup_drop"`
-
-### Browse Single Service
-`GET /customers/shops/{shop_id}/browse/services/{service_id}`
-
-Returns a single service object (same shape as items above).
-
----
-
-### Browse Shop Info
-`GET /customers/shops/{shop_id}/browse/shop-info`
-
-```json
-{
-  "id": 1,
-  "name": "Test Garage",
-  "description": "...",
-  "address": "123 Test St",
-  "phone": "+1234567890",
-  "email": "garage@test.com",
-  "is_active": true,
-  "created_at": "2024-01-01T00:00:00"
-}
-```
-
----
-
-## 9. Global Search (Public)
-
-No authentication required. Searches products and/or services **across all active shops**.
-
-`GET /search`
-
-| Query Param | Type | Values | Default | Description |
-|-------------|------|--------|---------|-------------|
-| `q` | string | — | **required** | Search term (min 1 char) |
-| `type` | string | `products` · `services` · `all` | `all` | Filter result type |
-| `page` | integer | — | `1` | Page number |
-| `limit` | integer | — | `20` (max `100`) | Items per page |
-
-```json
-{
-  "items": [
-    {
-      "type": "product",
-      "id": 5,
-      "name": "Oil Filter",
-      "description": "OEM quality",
-      "price": 15.99,
-      "image_url": "...",
-      "is_available": true,
-      "stock_quantity": 40,
-      "rating": 4.3,
-      "rating_count": 12,
-      "shop": { "id": 2, "name": "Toyota Service Center", "address": "123 Main St" }
-    },
-    {
-      "type": "service",
-      "id": 3,
-      "name": "Oil Change",
-      "description": "Full synthetic oil change",
-      "price": 49.99,
-      "estimated_duration_minutes": 30,
-      "service_type": "shop_based",
-      "image_url": "...",
-      "is_available": true,
-      "rating": 4.7,
-      "rating_count": 30,
-      "shop": { "id": 2, "name": "Toyota Service Center", "address": "123 Main St" }
-    }
-  ],
-  "total": 54,
-  "page": 1,
-  "limit": 20
-}
-```
-
-> When `type=all`, results are interleaved (up to `limit/2` products + `limit/2` services per page). Use `type=products` or `type=services` for accurate single-type pagination.
-
----
-
-## 10. Unified Booking
-
-### Create Booking
-`POST /product-orders/unified-booking` 🔒
-
-Handles service-only, products-only, or combined bookings in a single request.
-
-**Service Only**
+**Response `200`:**
 ```json
 {
   "shop_id": 1,
-  "service_id": 1,
-  "appointment_date": "2024-01-15T10:00:00",
-  "vehicle_info": "Toyota Camry 2020",
-  "service_notes": "Please check brakes"
+  "appointments": {
+    "total": 45, "pending": 3, "confirmed": 5,
+    "completed": 35, "cancelled": 2, "rejected": 0
+  },
+  "orders": {
+    "total": 30, "pending": 2, "confirmed": 4,
+    "processing": 1, "ready": 0, "completed": 22, "cancelled": 1
+  },
+  "revenue": { "appointments": 1800.00, "orders": 450.50, "total": 2250.50 },
+  "products": 24,
+  "services": 8
 }
 ```
 
-**Products Only**
+---
+
+### `POST /shops/{shop_id}/members`  👑
+Add a user as owner or mechanic.
+
+**Body:** `{ "user_id": 5, "shop_id": 1, "role": "mechanic" }`  
+**Response `200`:** `{ "message": "User added as mechanic", "user_shop": {...} }`
+
+---
+
+### `GET /shops/{shop_id}/members`  🔧
+List all active members of the shop.
+
+**Response `200`:**
 ```json
-{
-  "shop_id": 1,
-  "product_items": [
-    { "product_id": 1, "quantity": 2 }
-  ],
-  "pickup_date": "2024-01-16T14:00:00",
-  "product_notes": "Call when ready"
-}
+[{ "user_id": 2, "username": "mech1", "full_name": "Mechanic One", "role": "mechanic", "is_active": true }]
 ```
 
-**Combined (Service + Products)**
-```json
-{
-  "shop_id": 1,
-  "service_id": 1,
-  "product_items": [{ "product_id": 1, "quantity": 1 }],
-  "appointment_date": "2024-01-15T10:00:00",
-  "pickup_date": "2024-01-16T14:00:00",
-  "vehicle_info": "Toyota Camry 2020"
-}
-```
+---
 
-**Mobile Service (with location)**
+### `PUT /shops/{shop_id}/members/{user_id}/role`  👑
+Change a member's role. Query param: `?new_role=owner|mechanic`
+
+**Response `200`:** `{ "message": "Role updated to owner" }`
+
+---
+
+### `DELETE /shops/{shop_id}/members/{user_id}`  👑
+Soft-remove a member (`is_active = false`).
+
+**Response `200`:** `{ "message": "Member removed successfully" }`
+
+---
+
+## Products (`/shops/{shop_id}/products`)
+
+### `POST /shops/{shop_id}/products`  👑
+Create a product.
+
+**Body:** `ProductCreate` (`name`, `description?`, `price`, `stock_quantity?`, `category_id?`, `image_url?`)  
+**Response `201`:** `ProductRead`
+
+---
+
+### `GET /shops/{shop_id}/products`  🔧
+List all active products in the shop.
+
+**Response `200`:** `[ProductRead]`
+
+---
+
+### `GET /shops/{shop_id}/products/search`  🔧
+Search/filter products.
+
+**Query params:** `q`, `category_id`, `min_price`, `max_price`  
+**Response `200`:** `[ProductRead]`
+
+---
+
+### `GET /shops/{shop_id}/products/{product_id}`  🔧
+Get one product.
+
+**Response `200`:** `ProductRead` · `404` if not found
+
+---
+
+### `PUT /shops/{shop_id}/products/{product_id}`  👑
+Update a product.
+
+**Body:** `ProductCreate`  
+**Response `200`:** `ProductRead`
+
+---
+
+### `DELETE /shops/{shop_id}/products/{product_id}`  👑
+Soft-delete a product.
+
+**Response `200`:** `{ "message": "Product deleted successfully" }`
+
+---
+
+### `POST /shops/{shop_id}/products/search-by-image`  🔧
+Visual search placeholder — returns products with images. ML not implemented.
+
+---
+
+### `GET /shops/{shop_id}/products/by-service/{service_id}`  🔧
+Get product recommendations linked to a service via shared categories.
+
+---
+
+## Services (`/shops/{shop_id}/services`)
+
+Mirrors the Products endpoints. All write operations require 👑; reads require 🔧.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/shops/{shop_id}/services` | Create |
+| `GET` | `/shops/{shop_id}/services` | List |
+| `GET` | `/shops/{shop_id}/services/{service_id}` | Detail |
+| `PUT` | `/shops/{shop_id}/services/{service_id}` | Update |
+| `DELETE` | `/shops/{shop_id}/services/{service_id}` | Soft-delete |
+
+**Service fields:** `name`, `description?`, `price`, `duration_minutes?`, `service_type` (`shop_based` | `mobile` | `pickup_drop`), `image_url?`  
+Response field: `estimated_duration_minutes` (alias of `duration_minutes`)
+
+---
+
+## Categories (`/categories`)
+
+### `GET /categories`  🌐
+List all root-level active product categories.
+
+### `GET /categories/tree`  🌐
+Full nested category tree.
+
+### `POST /categories`  🛡️
+Create a category (admin only).
+
+### `PUT /categories/{id}`  🛡️
+Update a category.
+
+### `DELETE /categories/{id}`  🛡️
+Delete a category.
+
+---
+
+## Vehicles (`/vehicles`)
+
+All public — no token required.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| `GET` | `/vehicles/makes` | List all makes |
+| `GET` | `/vehicles/makes/{make_id}/models` | Models for a make |
+| `GET` | `/vehicles/makes/{make_id}/models/{model_id}/years` | Years |
+| `GET` | `/vehicles/makes/{make_id}/models/{model_id}/years/{year_id}/engines` | Engines |
+
+---
+
+## Customer Vehicles (`/customer-vehicles`)  🔒
+
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/customer-vehicles` | Add a vehicle to profile |
+| `GET` | `/customer-vehicles` | List my vehicles |
+| `GET` | `/customer-vehicles/{id}` | Detail |
+| `PUT` | `/customer-vehicles/{id}` | Update |
+| `DELETE` | `/customer-vehicles/{id}` | Remove |
+
+---
+
+## Public Browse (`/customers/shops/{shop_id}/browse`)  🌐
+
+No authentication required for any browse endpoint.
+
+### `GET /customers/shops/{shop_id}/browse/shop-info`
+Public shop profile.
+
+### `GET /customers/shops/{shop_id}/browse/products`
+Browse products with ratings.
+
+**Query params:** `search`, `category_id`, `page`, `limit`  
+**Response `200`:** paginated `{ items, total, page, limit }` — each item includes `rating`, `rating_count`, `is_available`
+
+### `GET /customers/shops/{shop_id}/browse/products/{product_id}`
+Single product detail with ratings.
+
+### `GET /customers/shops/{shop_id}/browse/services`
+Browse services with ratings.
+
+**Query params:** `search`, `page`, `limit`
+
+### `GET /customers/shops/{shop_id}/browse/services/{service_id}`
+Single service detail with ratings.
+
+---
+
+## Customer Bookings (`/customers`)  🔒
+
+### `GET /customers/my-appointments`
+List the current customer's appointments.
+
+**Query params:** `status` (`pending` | `confirmed` | `in_progress` | `completed` | `cancelled` | `rejected`)  
+**Response `200`:** `[AppointmentRead]`
+
+### `GET /customers/my-appointments/{appointment_id}`
+Get one appointment's detail.
+
+### `PUT /customers/my-appointments/{appointment_id}/cancel`
+Cancel an appointment (not allowed if already completed).
+
+**Response `200`:** `{ "message": "Appointment cancelled successfully" }`
+
+### `GET /customers/my-service-history`
+Service completion history.
+
+**Query params:** `shop_id` (optional filter)
+
+---
+
+## Shop Appointments (Owner/Mechanic View) (`/customers`)  🔧
+
+### `GET /customers/shops/{shop_id}/appointments`
+Full appointment list for the shop, with optional filtering.
+
+**Query params:** `status`, `date_from`, `date_to`  
+**Response `200`:** `[AppointmentRead]`
+
+### `PUT /customers/shops/{shop_id}/appointments/{appointment_id}/status`
+Update appointment status directly.
+
+**Query param:** `?new_status=completed`
+
+---
+
+## Unified Booking (`/product-orders`)  🔒
+
+### `POST /product-orders/unified-booking`
+Book a service, order products, or both in one request. Preferred over the legacy `/customers/appointments` endpoint.
+
+**Body:**
 ```json
 {
   "shop_id": 1,
   "service_id": 2,
-  "appointment_date": "2024-01-15T10:00:00",
-  "customer_address": "456 Home St",
-  "customer_phone": "+1234567890",
-  "customer_location_lat": 13.756,
-  "customer_location_lng": 100.502
+  "appointment_date": "2025-06-01T10:00:00",
+  "vehicle_info": "Toyota Camry 2020",
+  "product_items": [{ "product_id": 5, "quantity": 2 }],
+  "pickup_date": "2025-06-02T14:00:00",
+  "notes": "Optional note",
+  "is_mobile_service": false,
+  "coupon_code": null
 }
 ```
 
-**Response** `201`
+**Response `201`:**
 ```json
 {
-  "message": "Combined booking created successfully",
-  "shop_id": 1,
   "appointment": {
-    "id": 1,
-    "service_id": 1,
-    "appointment_date": "2024-01-15T10:00:00",
-    "status": "pending",
-    "pricing": {
-      "service_price": 39.99,
-      "mobile_fee": 0,
-      "discount": 0,
-      "tax": 0,
-      "total": 39.99
-    }
+    "id": 10, "status": "pending",
+    "pricing": { "service_price": 50, "mobile_service_fee": 0, "discount": 0, "tax": 0, "total": 50 }
   },
   "product_order": {
-    "id": 2,
-    "total_amount": 29.99,
-    "status": "pending"
+    "id": 7, "status": "pending", "total_amount": 75.00
   }
 }
 ```
 
 ---
 
-### Calculate Price Preview
-`POST /product-orders/calculate-price` 🔒
+### `GET /product-orders/my-orders`  🔒
+List the current customer's product orders.
 
-Same request body as **Create Booking**. Returns price breakdown **without** creating any records.
+**Query params:** `status`  
+**Response `200`:** `[ProductOrderRead]`
 
+### `GET /product-orders/my-orders/{order_id}`  🔒
+Order detail including line items.
+
+---
+
+## Mechanic Bookings (`/mechanic`)  🔧
+
+### `GET /mechanic/shops/{shop_id}/pending-bookings`
+Paginated list of pending service appointments.
+
+**Query params:** `page`, `limit` (max 200, default 50)
+
+**Response `200`:**
 ```json
 {
-  "service": {
-    "id": 1,
-    "name": "Oil Change",
-    "price": 39.99,
-    "type": "shop_based"
-  },
-  "products": [
-    { "product_id": 1, "name": "Oil Filter", "unit_price": 15, "quantity": 1, "total_price": 15 }
-  ],
-  "pricing": {
-    "service_price": 39.99,
-    "mobile_service_fee": 0,
-    "products_subtotal": 15,
-    "subtotal": 54.99,
-    "discount_amount": 0,
-    "tax_amount": 0,
-    "total_amount": 54.99
-  }
+  "total": 12, "page": 1, "limit": 50,
+  "items": [{
+    "appointment_id": 5,
+    "customer": { "id": 3, "name": "John Doe", "phone": "john" },
+    "vehicle_info": "Toyota Camry 2020",
+    "appointment_date": "...",
+    "service_price": 50.0,
+    "mobile_service_fee": 0.0,
+    "total_amount": 50.0,
+    "notes": null
+  }]
 }
 ```
 
 ---
 
-## 10. Customer Appointments
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/customers/my-appointments` | 🔒 | List my appointments |
-| `GET` | `/customers/my-appointments/{appointment_id}` | 🔒 | Get appointment detail |
-| `PUT` | `/customers/my-appointments/{appointment_id}/cancel` | 🔒 | Cancel appointment |
-| `GET` | `/customers/my-service-history` | 🔒 | Full service history |
-| `GET` | `/customers/shops/{shop_id}/appointments` | 🔒 🔧 | Shop's appointments list |
-| `PUT` | `/customers/shops/{shop_id}/appointments/{appointment_id}/status` | 🔒 🔧 | Update status |
-
-**List my appointments — query params:**
-
-| Param | Values |
-|-------|--------|
-| `status` | `pending` · `confirmed` · `completed` · `cancelled` |
+### `GET /mechanic/shops/{shop_id}/bookings/{appointment_id}`  🔧
+Detailed view of a single booking.
 
 ---
 
-## 11. Customer Product Orders
+### `POST /mechanic/shops/{shop_id}/bookings/{appointment_id}/action`  🔧
+Accept or reject a pending booking.
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/product-orders/my-orders` | 🔒 | List my orders |
-| `GET` | `/product-orders/my-orders/{order_id}` | 🔒 | Order details |
-| `GET` | `/product-orders/my-orders/{order_id}/price-breakdown` | 🔒 | Price breakdown |
-| `PUT` | `/product-orders/my-orders/{order_id}/cancel` | 🔒 | Cancel order |
-| `GET` | `/product-orders/shops/{shop_id}/orders` | 🔒 🔧 | Shop's orders |
-| `PUT` | `/product-orders/shops/{shop_id}/orders/{order_id}/status` | 🔒 🔧 | Update order status |
+**Body:**
+```json
+{ "action": "accept", "notes": "See you then!" }
+{ "action": "reject", "reason": "Fully booked" }
+```
 
-**List my orders — query param:**
-
-| Param | Values |
-|-------|--------|
-| `order_status` | `pending` · `confirmed` · `processing` · `ready` · `completed` · `cancelled` |
+**Response `200`:**
+```json
+{ "success": true, "message": "...", "appointment_id": 5, "new_status": "confirmed", "customer_notified": true }
+```
+> `reject` → status becomes **`rejected`** (not `cancelled`). Admin can filter `?status=rejected`.
 
 ---
 
-## 12. Mechanic / Shop — Bookings
+### `GET /mechanic/shops/{shop_id}/today-bookings`  🔧
+Today's confirmed bookings.
 
-### View Pending Bookings
-`GET /mechanic/shops/{shop_id}/pending-bookings` 🔒 🔧
+**Response `200`:**
+```json
+{ "date": "2025-05-16", "count": 3, "bookings": [...] }
+```
 
+---
+
+### `GET /mechanic/shops/{shop_id}/pending-orders`  🔧
+Paginated list of pending product orders.
+
+**Query params:** `page`, `limit` (max 200, default 50)
+
+**Response `200`:**
 ```json
 {
-  "count": 2,
-  "bookings": [
-    {
-      "appointment_id": 1,
-      "customer": { "id": 3, "name": "John Doe", "phone": "customer1" },
-      "vehicle_info": "Toyota Camry 2020",
-      "appointment_date": "2024-01-15T10:00:00",
-      "total_amount": 39.99,
-      "notes": null
-    }
-  ]
+  "total": 4, "page": 1, "limit": 50,
+  "items": [{
+    "order_id": 7,
+    "customer": { "id": 3, "name": "Jane", "phone": "jane" },
+    "total_amount": 75.00, "items_count": 2,
+    "pickup_date": "...", "notes": null
+  }]
 }
 ```
 
 ---
 
-### View Booking Details
-`GET /mechanic/shops/{shop_id}/bookings/{appointment_id}` 🔒 🔧
+### `POST /mechanic/shops/{shop_id}/orders/{order_id}/action`  🔧
+Accept or reject a pending product order.
+
+**Body:** `{ "action": "accept" }` or `{ "action": "reject", "reason": "Out of stock" }`
+
+> `reject` → status becomes **`cancelled`** and stock is restored.
 
 ---
 
-### Accept / Reject Booking
-`POST /mechanic/shops/{shop_id}/bookings/{appointment_id}/action` 🔒 🔧
-
-**Accept**
-```json
-{ "action": "accept", "notes": "We'll start at 10 AM" }
-```
-
-**Reject**
-```json
-{ "action": "reject", "reason": "Fully booked that day" }
-```
+### `PUT /mechanic/shops/{shop_id}/orders/{order_id}/ready`  🔧
+Mark a confirmed order as ready for pickup.
 
 ---
 
-### Today's Bookings
-`GET /mechanic/shops/{shop_id}/today-bookings` 🔒 🔧
+### `GET /mechanic/my-notifications`  🔒
+Notifications for the current user.
 
----
+**Query params:** `status` (`unread` | `read`), `limit` (max 100)
 
-## 13. Mechanic / Shop — Orders
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/mechanic/shops/{shop_id}/pending-orders` | 🔒 🔧 | Pending product orders |
-| `POST` | `/mechanic/shops/{shop_id}/orders/{order_id}/action` | 🔒 🔧 | Accept / reject order |
-| `PUT` | `/mechanic/shops/{shop_id}/orders/{order_id}/ready` | 🔒 🔧 | Mark order ready for pickup |
-
-**Accept / Reject order:**
-```json
-{ "action": "accept" }
-```
-or
-```json
-{ "action": "reject", "reason": "Out of stock" }
-```
-
----
-
-## 14. Notifications
-
-### My Notifications
-`GET /mechanic/my-notifications` 🔒
-
-| Query Param | Values | Default |
-|-------------|--------|---------|
-| `status` | `unread` · `read` | — |
-| `limit` | integer | `50` (max `100`) |
-
+**Response `200`:**
 ```json
 {
-  "unread_count": 3,
-  "notifications": [
-    {
-      "id": 1,
-      "type": "new_booking",
-      "title": "New Booking Received",
-      "message": "John booked Oil Change",
-      "status": "unread",
-      "appointment_id": 1,
-      "created_at": "2024-01-01T10:00:00",
-      "read_at": null
-    }
-  ]
+  "unread_count": 2,
+  "notifications": [{ "id": 1, "type": "...", "title": "...", "message": "...", "status": "unread", ... }]
 }
 ```
 
 ---
 
-### Mark as Read
-`PUT /mechanic/notifications/{notification_id}/read` 🔒
+### `PUT /mechanic/notifications/{notification_id}/read`  🔒
+Mark a notification as read.
 
 ---
 
-## 15. Quotations
+## Mechanic Performance (`/mechanic`)  🔧
 
-### Shop — Create Quotation
-`POST /quotations/shops/{shop_id}` 🔒 🔧
+| Method | Path |
+|--------|------|
+| `POST` | `/mechanic/shops/{shop_id}/performance` |
+| `GET` | `/mechanic/shops/{shop_id}/performance` |
+| `GET` | `/mechanic/shops/{shop_id}/performance/{mechanic_id}` |
 
+---
+
+## Ratings (`/ratings`)
+
+### `POST /ratings/products/{product_id}`  🔒
+Rate a product (1–5 stars).
+
+### `GET /ratings/products/{product_id}`  🌐
+List ratings for a product.
+
+### `POST /ratings/services/{service_id}`  🔒
+Rate a service.
+
+### `GET /ratings/services/{service_id}`  🌐
+List ratings for a service.
+
+---
+
+## Quotations (`/quotations`)  🔧
+
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/quotations/shops/{shop_id}` | Create draft |
+| `GET` | `/quotations/shops/{shop_id}` | List (`?status=draft\|sent\|accepted\|rejected`) |
+| `GET` | `/quotations/shops/{shop_id}/{quotation_id}` | Detail |
+| `PUT` | `/quotations/shops/{shop_id}/{quotation_id}` | Update draft |
+| `POST` | `/quotations/shops/{shop_id}/{quotation_id}/send` | Send to customer |
+| `DELETE` | `/quotations/shops/{shop_id}/{quotation_id}` | Delete |
+
+---
+
+## Repair Progress (`/repair-progress`)  🔧
+
+7-stage repair tracking: `received` → `diagnosed` → `parts_ordered` → `in_repair` → `quality_check` → `ready` → `delivered`
+
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/repair-progress/shops/{shop_id}/appointments/{id}` | Start tracking |
+| `GET` | `/repair-progress/shops/{shop_id}/appointments/{id}` | Current stage |
+| `POST` | `/repair-progress/shops/{shop_id}/appointments/{id}/update` | Advance stage |
+| `GET` | `/repair-progress/my-repairs/{appointment_id}` | 🔒 Customer view |
+
+---
+
+## Invoices (`/invoices`)  🔧
+
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/invoices/shops/{shop_id}` | Create invoice |
+| `GET` | `/invoices/shops/{shop_id}` | List |
+| `GET` | `/invoices/shops/{shop_id}/{invoice_id}` | Detail |
+| `POST` | `/invoices/shops/{shop_id}/{invoice_id}/send` | Send to customer |
+| `POST` | `/invoices/shops/{shop_id}/{invoice_id}/record-payment` | Record payment |
+
+---
+
+## Chat (`/chat`)  🔒
+
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/chat/rooms` | Create a room |
+| `GET` | `/chat/rooms` | List my rooms |
+| `GET` | `/chat/rooms/{room_id}` | Room detail |
+| `POST` | `/chat/rooms/{room_id}/messages` | Send a message |
+| `GET` | `/chat/rooms/{room_id}/messages` | Message history |
+
+---
+
+## Global Search (`/search`)  🌐
+
+### `GET /search`
+Search products and services across all active shops.
+
+**Query params:**
+- `q` — search term (required, min 1 char)
+- `type` — `products` | `services` | `all` (default `all`)
+- `page`, `limit` (max 100)
+
+**Response `200`:**
 ```json
 {
-  "appointment_id": 1,
-  "title": "Engine Repair Estimate",
-  "description": "Full diagnostics and repair",
-  "items": [
-    { "item_type": "labor", "name": "Engine Diagnostics", "quantity": 1, "unit_price": 75 },
-    { "item_type": "part",  "name": "Spark Plugs",        "quantity": 4, "unit_price": 12.5 }
-  ],
-  "labor_cost": 75,
-  "parts_cost": 50,
-  "tax_amount": 10,
-  "discount_amount": 5
+  "items": [{
+    "type": "product",
+    "id": 3, "name": "Oil Filter", "price": 25.00,
+    "rating": 4.5, "rating_count": 12, "is_available": true,
+    "shop": { "id": 1, "name": "Garage A", "address": "..." }
+  }],
+  "total": 42, "page": 1, "limit": 20
 }
 ```
 
 ---
 
-### Shop — Other Quotation Actions
+## Admin (`/admin`)  🛡️
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/quotations/shops/{shop_id}` | 🔒 🔧 | List shop quotations |
-| `GET` | `/quotations/shops/{shop_id}/{quotation_id}` | 🔒 🔧 | Get quotation detail |
-| `PUT` | `/quotations/shops/{shop_id}/{quotation_id}` | 🔒 🔧 | Update quotation |
-| `POST` | `/quotations/shops/{shop_id}/{quotation_id}/send` | 🔒 🔧 | Send to customer |
-
-**List shop quotations — query param:**
-
-| Param | Values |
-|-------|--------|
-| `status` | `draft` · `sent` · `approved` · `rejected` · `expired` |
+All endpoints require `is_superuser=true`.
 
 ---
-
-### Customer — Quotation Actions
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/quotations/my-quotations` | 🔒 | View my quotations |
-| `GET` | `/quotations/my-quotations/{quotation_id}` | 🔒 | Quotation detail |
-| `POST` | `/quotations/my-quotations/{quotation_id}/action` | 🔒 | Approve / reject |
-
-**Approve:**
-```json
-{ "action": "approve" }
-```
-
-**Reject:**
-```json
-{ "action": "reject", "rejection_reason": "Too expensive" }
-```
-
----
-
-## 16. Repair Progress
-
-**Stages (in order):**  
-`received` → `diagnosing` → `waiting_parts` → `in_progress` → `quality_check` → `ready_for_pickup` → `completed`
-
-### Shop — Create Progress Record
-`POST /repair-progress/shops/{shop_id}` 🔒 🔧
-
-```json
-{
-  "appointment_id": 1,
-  "stage": "received",
-  "description": "Vehicle received for inspection",
-  "estimated_completion": "2024-01-20T17:00:00"
-}
-```
-
----
-
-### Shop — Update Stage
-`PUT /repair-progress/shops/{shop_id}/{progress_id}` 🔒 🔧
-
-```json
-{
-  "stage": "in_progress",
-  "note": "Engine repair started",
-  "estimated_completion": "2024-01-20T17:00:00"
-}
-```
-
----
-
-### Shop — List All Repairs
-`GET /repair-progress/shops/{shop_id}` 🔒 🔧
-
-| Query Param | Values |
-|-------------|--------|
-| `stage` | `received` · `diagnosing` · `waiting_parts` · `in_progress` · `quality_check` · `ready_for_pickup` · `completed` |
-
----
-
-### Customer — View My Repairs
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/repair-progress/my-repairs` | List all my repairs |
-| `GET` | `/repair-progress/my-repairs/{progress_id}` | Detail with full update history |
-
-**Detail response:**
-```json
-{
-  "id": 1,
-  "stage": "in_progress",
-  "description": "Engine repair",
-  "estimated_completion": "2024-01-20T17:00:00",
-  "updates": [
-    {
-      "id": 1,
-      "from_stage": "received",
-      "to_stage": "diagnosing",
-      "note": "Found engine issue",
-      "created_at": "2024-01-15T10:00:00"
-    }
-  ]
-}
-```
-
----
-
-## 17. Invoices
-
-### Shop — Create Invoice
-`POST /invoices/shops/{shop_id}` 🔒 🔧
-
-```json
-{
-  "customer_id": 3,
-  "appointment_id": 1,
-  "items": [
-    { "item_type": "labor", "name": "Oil Change Labor", "quantity": 1, "unit_price": 35 },
-    { "item_type": "part",  "name": "Oil Filter",       "quantity": 1, "unit_price": 15 }
-  ],
-  "labor_cost": 35,
-  "parts_cost": 15,
-  "tax_amount": 5,
-  "discount_amount": 0,
-  "total_amount": 55,
-  "due_date": "2024-01-30T00:00:00"
-}
-```
-
----
-
-### Shop — Other Invoice Actions
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/invoices/shops/{shop_id}` | 🔒 🔧 | List shop invoices |
-| `GET` | `/invoices/shops/{shop_id}/{invoice_id}` | 🔒 🔧 | Invoice detail |
-| `POST` | `/invoices/shops/{shop_id}/{invoice_id}/send` | 🔒 🔧 | Send to customer |
-| `POST` | `/invoices/shops/{shop_id}/{invoice_id}/payments` | 🔒 🔧 | Record payment |
-
-**Record payment:**
-```json
-{
-  "amount": 55,
-  "method": "cash",
-  "reference": "REF-001",
-  "notes": "Full payment"
-}
-```
-**Payment methods:** `cash` · `card` · `transfer` · `mobile_payment` · `other`
-
-**List invoices — query param:**
-
-| Param | Values |
-|-------|--------|
-| `status` | `draft` · `sent` · `paid` · `partially_paid` · `overdue` · `cancelled` |
-
----
-
-### Customer — Invoices
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/invoices/my-invoices` | List my invoices |
-| `GET` | `/invoices/my-invoices/{invoice_id}` | Invoice detail with payments |
-
----
-
-## 18. Chat / Support
-
-### Create Chat Room
-`POST /chat/rooms` 🔒
-
-```json
-{
-  "shop_id": 1,
-  "room_type": "appointment",
-  "appointment_id": 1
-}
-```
-**Room types:** `general` · `appointment` · `order`
-
----
-
-### List My Chat Rooms
-`GET /chat/rooms` 🔒
-
-```json
-[
-  {
-    "id": 1,
-    "shop": { "id": 1, "name": "Test Garage" },
-    "room_type": "appointment",
-    "last_message": {
-      "sender_id": 3,
-      "content": "When will my car be ready?",
-      "created_at": "2024-01-15T10:00:00"
-    },
-    "unread_count": 2
-  }
-]
-```
-
----
-
-### View Room Messages
-`GET /chat/rooms/{room_id}` 🔒
-
-| Query Param | Default |
-|-------------|---------|
-| `limit` | `50` |
-
----
-
-### Send Message
-`POST /chat/rooms/{room_id}/messages` 🔒
-
-```json
-{
-  "content": "When will my car be ready?",
-  "message_type": "text"
-}
-```
-**Message types:** `text` · `image` · `file` · `system`
-
----
-
-### Other Chat Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `PUT` | `/chat/rooms/{room_id}/messages/{message_id}/read` | Mark message as read |
-| `GET` | `/chat/rooms/{room_id}/unread-count` | Get unread count |
-| `PUT` | `/chat/rooms/{room_id}/close` | Close chat room |
-
----
-
-## 19. Ratings
-
-### Rate a Product
-`POST /ratings/products` 🔒
-
-```json
-{
-  "product_id": 1,
-  "rating": 5,
-  "review": "Great oil!",
-  "order_id": 2
-}
-```
-
----
-
-### Rate a Service
-`POST /ratings/services` 🔒
-
-```json
-{
-  "service_id": 1,
-  "rating": 5,
-  "review": "Quick and thorough",
-  "appointment_id": 1
-}
-```
-
----
-
-### Other Rating Endpoints
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/ratings/products/{product_id}/summary` | Public | Rating summary |
-| `GET` | `/ratings/products/{product_id}/reviews` | Public | Reviews list |
-| `GET` | `/ratings/services/{service_id}/summary` | Public | Rating summary |
-| `GET` | `/ratings/services/{service_id}/reviews` | Public | Reviews list |
-| `GET` | `/ratings/shops/{shop_id}/top-products` | 🔒 🏪 | Top-rated products |
-| `GET` | `/ratings/shops/{shop_id}/top-services` | 🔒 🏪 | Top-rated services |
-| `GET` | `/ratings/my-ratings` | 🔒 | All my submitted ratings |
-
-**Rating summary response:**
-```json
-{
-  "average_rating": 4.5,
-  "total_ratings": 12,
-  "five_star": 8,
-  "four_star": 3,
-  "three_star": 1,
-  "two_star": 0,
-  "one_star": 0
-}
-```
-
----
-
-## 20. Mechanic Performance
-
-### Owner — All Mechanics Overview
-`GET /shops/{shop_id}/mechanics/performance` 🔒 🏪
-
-| Query Param | Format | Description |
-|-------------|--------|-------------|
-| `date_from` | `YYYY-MM-DD` | Default: last 30 days |
-| `date_to` | `YYYY-MM-DD` | Default: today |
-
-```json
-{
-  "shop_summary": {
-    "total_jobs": 45,
-    "total_revenue": 2250.00,
-    "mechanic_count": 3
-  },
-  "mechanics": [...],
-  "total_mechanics": 3
-}
-```
-
----
-
-### Owner — Top Mechanics
-`GET /shops/{shop_id}/mechanics/performance/top` 🔒 🏪
-
-| Query Param | Values | Default |
-|-------------|--------|---------|
-| `metric` | `revenue` · `rating` · `jobs` | `revenue` |
-| `limit` | 1–20 | `5` |
-
----
-
-### Owner — Individual Mechanic
-`GET /shops/{shop_id}/mechanics/{mechanic_id}/performance` 🔒 🏪
-
----
-
-### Owner — Full History (Paginated)
-`GET /shops/{shop_id}/mechanics/{mechanic_id}/performance/history` 🔒 🏪
-
-| Query Param | Default |
-|-------------|---------|
-| `page` | `1` |
-| `page_size` | `20` (max `100`) |
-
----
-
-### Owner — Record Performance
-`POST /shops/{shop_id}/mechanics/{mechanic_id}/performance/record` 🔒 🏪
-
-```json
-{
-  "appointment_id": 1,
-  "service_name": "Oil Change",
-  "revenue_generated": 39.99,
-  "estimated_duration": 30,
-  "actual_duration": 25
-}
-```
-
----
-
-### Customer — Rate a Mechanic
-`POST /shops/{shop_id}/mechanics/{mechanic_id}/rate` 🔒
-
-```json
-{
-  "appointment_id": 1,
-  "rating": 5,
-  "review": "Very professional!"
-}
-```
-
----
-
-### Mechanic — My Own Performance
-`GET /shops/{shop_id}/mechanics/my-performance` 🔒 🔧
-
-Returns own summary + rank within the shop.
-
----
-
-## 21. Admin
-
-> All admin endpoints require a superuser token (`is_superuser = true`).
 
 ### Users
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/admin/users` | List all users (paginated) |
-| `GET` | `/admin/users/{user_id}` | User detail |
-| `PUT` | `/admin/users/{user_id}/role` | Change user role |
-| `PUT` | `/admin/users/{user_id}/status` | Activate / deactivate |
-| `DELETE` | `/admin/users/{user_id}` | Delete user |
+#### `GET /admin/users`
+**Query params:** `page`, `limit` (max 1000), `search`, `is_active`, `is_superuser`
 
-**List users — query params:**
+**Response `200`:** `{ "items": [...], "total": N, "page": 1, "limit": 100 }`
 
-| Param | Type | Description |
-|-------|------|-------------|
-| `skip` | integer | Offset (default `0`) |
-| `limit` | integer | Page size (default `100`, max `1000`) |
-| `search` | string | Search username / email / name |
-| `is_active` | boolean | Filter active/inactive |
-| `is_superuser` | boolean | Filter admins |
+#### `GET /admin/users/{user_id}`
+User detail including `shop_memberships`.
+
+#### `PUT /admin/users/{user_id}/status`
+**Query param:** `?is_active=false`
+
+#### `PUT /admin/users/{user_id}/role`
+**Query param:** `?is_superuser=true`
+
+#### `DELETE /admin/users/{user_id}`
+Hard-delete a user.
 
 ---
 
 ### Shops
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/admin/shops` | List all shops |
-| `GET` | `/admin/shops/{shop_id}` | Shop detail |
-| `DELETE` | `/admin/shops/{shop_id}` | Delete shop |
+#### `GET /admin/shops`
+**Query params:** `page`, `limit` (max 1000), `search` (name, case-insensitive), `is_active`
+
+**Response `200`:** `{ "items": [...], "total": N, "page": 1, "limit": 100 }`
+
+#### `GET /admin/shops/{shop_id}`
+Shop detail with member list and counts.
+
+#### `PUT /admin/shops/{shop_id}/status`
+Toggle shop active/inactive **without deleting it**.
+
+**Query param:** `?is_active=false`
+
+**Response `200`:**
+```json
+{ "message": "Shop deactivated successfully", "shop_id": 1, "is_active": false }
+```
+
+#### `DELETE /admin/shops/{shop_id}`
+Hard-delete a shop.
 
 ---
 
 ### Bookings & Orders
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/admin/appointments` | All appointments (paginated) |
-| `GET` | `/admin/orders` | All product orders |
+#### `GET /admin/appointments`
+**Query params:** `page`, `limit` (max 1000), `status` (including `rejected`), `shop_id`
+
+**Response `200`:** `{ "items": [...], "total": N, "page": 1, "limit": 100 }`
+
+#### `GET /admin/orders`
+**Query params:** `page`, `limit` (max 1000), `status`, `shop_id`
+
+**Response `200`:** `{ "items": [...], "total": N, "page": 1, "limit": 100 }`
 
 ---
 
 ### Ratings
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/admin/ratings` | All ratings |
-| `DELETE` | `/admin/ratings/product/{rating_id}` | Delete product rating |
-| `DELETE` | `/admin/ratings/service/{rating_id}` | Delete service rating |
+#### `GET /admin/ratings`
+Lists product and service ratings in separate arrays.
+
+#### `DELETE /admin/ratings/product/{rating_id}`
+#### `DELETE /admin/ratings/service/{rating_id}`
 
 ---
 
 ### Statistics
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/admin/statistics` | Platform overview totals |
-| `GET` | `/admin/statistics/daily` | Daily stats (query param: `days=30`) |
+#### `GET /admin/statistics`
+Platform-wide totals.
 
-**Statistics response:**
+**Response `200`:**
 ```json
 {
-  "total_users": 150,
-  "total_shops": 12,
-  "total_appointments": 380,
-  "total_revenue": 15240.50
+  "users":   { "total": 120, "active": 115, "inactive": 5, "admins": 2 },
+  "shops":   { "total": 18, "active": 15, "inactive": 3 },
+  "catalog": { "products": 340, "services": 90 },
+  "appointments": { "total": 500, "pending": 20, "completed": 400, "cancelled": 80 },
+  "orders":       { "total": 300, "pending": 10, "completed": 260, "cancelled": 30 },
+  "revenue": { "appointments": 45000.00, "orders": 12000.00, "total": 57000.00 }
 }
 ```
 
 ---
 
-## Additional Notes
+#### `GET /admin/statistics/daily`
+Rolling period summary.
 
-### `GET /shops/{shop_id}/products/search` — Auth requirement
-This endpoint requires a valid Bearer token **and** shop membership (owner or mechanic). It is a **shop-management** endpoint, not public. For customer-facing product search use:
-- `GET /customers/shops/{shop_id}/browse/products?search=...` (public, per-shop)
-- `GET /search?q=...` (public, cross-shop)
+**Query params:** `days` (1–365, default 30)
 
-### Image Search (`POST /shops/{shop_id}/products/search-by-image`)
-The endpoint exists but is a **placeholder** — it currently returns products that have images attached. Full ML-based visual search is not yet implemented. The mobile client should hide this feature until the endpoint is production-ready.
-
-### Categories (`GET /categories`)
-Returns root-level product categories. Use `GET /categories/tree` for the full nested tree.
-
+**Response `200`:**
 ```json
-[
-  { "id": 1, "name": "Engine Parts", "description": "...", "parent_id": null, "shop_id": 1 },
-  { "id": 2, "name": "Filters",      "description": "...", "parent_id": null, "shop_id": 1 }
-]
+{
+  "period_days": 30,
+  "start_date": "2025-04-16T...",
+  "end_date": "2025-05-16T...",
+  "new_users": 18,
+  "new_shops": 2,
+  "new_appointments": 42,
+  "new_orders": 15,
+  "revenue": { "appointments": 1200.00, "orders": 320.50, "total": 1520.50 }
+}
 ```
-
-Pass `category_id` to `GET /customers/shops/{id}/browse/products?category_id=1` to filter products by category.
 
 ---
 
-## Error Format & Status Codes
+## Default Test Accounts
 
-**All errors return:**
-```json
-{ "detail": "Error message here" }
-```
-
-| Code | Meaning |
-|------|---------|
-| `200` | OK |
-| `201` | Created |
-| `400` | Bad Request — validation or business rule violation |
-| `401` | Unauthorized — missing or invalid token |
-| `403` | Forbidden — valid token but insufficient permissions |
-| `404` | Not Found |
-| `422` | Unprocessable Entity — request body schema error |
-| `500` | Internal Server Error |
-
----
-
-## Test Accounts
+Seeded automatically on startup:
 
 | Role | Username | Password |
 |------|----------|----------|
@@ -1392,4 +800,18 @@ Pass `category_id` to `GET /customers/shops/{id}/browse/products?category_id=1` 
 | Mechanic | `mechanic1` | `mechanic123` |
 | Customer | `customer1` | `customer123` |
 
-> 🔒 = Requires `Authorization: Bearer <token>` header
+---
+
+## Changelog
+
+| Version | Change |
+|---------|--------|
+| 2025-05-16 | **P0-1** `GET /auth/me/roles` now returns `shop_roles` array from DB |
+| 2025-05-16 | **P0-2** `reject` booking action now sets status `rejected` (was `cancelled`); `GET /admin/appointments?status=rejected` works |
+| 2025-05-16 | **P1-3** Added `GET /shops/{shop_id}/statistics` for owners |
+| 2025-05-16 | **P1-5** `pending-bookings` and `pending-orders` support `page`/`limit` params |
+| 2025-05-16 | **P1-6** Added `PUT /admin/shops/{shop_id}/status` for admin shop toggle |
+| 2025-05-16 | **Shape** All admin list endpoints standardised to `{items, total, page, limit}` |
+| 2025-05-16 | **P2-3** `GET /admin/statistics/daily` includes `revenue` breakdown |
+| 2025-05-16 | **P2-5** `GET /admin/shops` now accepts `search` query param |
+| 2025-05-16 | **Merge** `GET /shops` conflict resolved — paginated response |

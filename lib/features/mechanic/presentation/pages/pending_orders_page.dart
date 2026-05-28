@@ -77,8 +77,8 @@ class _PendingOrdersPageState extends State<PendingOrdersPage> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text('Order #${order.id}',
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.bold)),
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             Text('\$${order.totalAmount.toStringAsFixed(2)}',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -107,8 +107,7 @@ class _PendingOrdersPageState extends State<PendingOrdersPage> {
                 )),
             if (order.items.length > 3)
               Text('+${order.items.length - 3} more items',
-                  style: TextStyle(
-                      fontSize: 12, color: Colors.grey.shade500)),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
             const SizedBox(height: 8),
           ],
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -123,8 +122,7 @@ class _PendingOrdersPageState extends State<PendingOrdersPage> {
             ElevatedButton(
               onPressed: () => _action(order, 'accept'),
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white),
+                  backgroundColor: Colors.green, foregroundColor: Colors.white),
               child: const Text('Accept'),
             ),
             const SizedBox(width: 8),
@@ -161,10 +159,9 @@ class _PendingOrdersPageState extends State<PendingOrdersPage> {
                 child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, ctrl.text),
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Reject',
-                  style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child:
+                  const Text('Reject', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -177,8 +174,8 @@ class _PendingOrdersPageState extends State<PendingOrdersPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                'Order ${action == 'accept' ? 'accepted' : 'rejected'}')),
+            content:
+                Text('Order ${action == 'accept' ? 'accepted' : 'rejected'}')),
       );
       _load();
     }

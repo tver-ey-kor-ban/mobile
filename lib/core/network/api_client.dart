@@ -28,11 +28,14 @@ class ApiClient {
     return headers;
   }
 
-  Future<ApiResponse> get(String endpoint, {Map<String, dynamic>? queryParams}) async {
+  Future<ApiResponse> get(String endpoint,
+      {Map<String, dynamic>? queryParams}) async {
     try {
       var url = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       if (queryParams != null) {
-        url = url.replace(queryParameters: queryParams.map((k, v) => MapEntry(k, v.toString())));
+        url = url.replace(
+            queryParameters:
+                queryParams.map((k, v) => MapEntry(k, v.toString())));
       }
       final response = await _client.get(url, headers: _headers);
       return _handleResponse(response);

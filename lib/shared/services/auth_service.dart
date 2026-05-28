@@ -195,7 +195,8 @@ class AuthService extends ChangeNotifier {
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     if (_token != null) await prefs.setString(_keyToken, _token!);
-    if (_refreshToken != null) await prefs.setString(_keyRefreshToken, _refreshToken!);
+    if (_refreshToken != null)
+      await prefs.setString(_keyRefreshToken, _refreshToken!);
     if (_userId != null) await prefs.setInt(_keyUserId, _userId!);
     if (_userName != null) await prefs.setString(_keyUserName, _userName!);
     if (_username != null) await prefs.setString(_keyUsername, _username!);

@@ -102,7 +102,9 @@ class _MyRepairsPageState extends State<MyRepairsPage> {
               child: Text(
                 _stageName(repair.stage),
                 style: TextStyle(
-                    fontSize: 11, color: stageColor, fontWeight: FontWeight.bold),
+                    fontSize: 11,
+                    color: stageColor,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ]),
@@ -128,8 +130,7 @@ class _MyRepairsPageState extends State<MyRepairsPage> {
               const SizedBox(width: 4),
               Text(
                 'Est. completion: ${_formatDate(repair.estimatedCompletion!)}',
-                style:
-                    TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
             ]),
           ],
@@ -159,18 +160,17 @@ class _MyRepairsPageState extends State<MyRepairsPage> {
           ),
         ),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(
               '${_stageName(u.fromStage)} → ${_stageName(u.toStage)}',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),
             if (u.note != null && u.note!.isNotEmpty)
               Text(u.note!,
-                  style:
-                      TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
             Text(_formatDate(u.createdAt),
-                style:
-                    TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
           ]),
         ),
       ]),

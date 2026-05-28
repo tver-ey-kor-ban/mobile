@@ -75,14 +75,20 @@ class MechanicOrderModel {
   });
 
   factory MechanicOrderModel.fromJson(Map<String, dynamic> json) {
+    final customer = json['customer'];
     return MechanicOrderModel(
-      id: json['id'] ?? 0,
-      customerId: json['customer_id'],
-      customerName:
-          json['customer_name'] ?? json['customer']?['name'] ?? 'Unknown',
+      // API returns "order_id" in the pending-orders list endpoint
+      id: json['order_id'] ?? json['id'] ?? 0,
+      customerId:
+          json['customer_id'] ?? (customer is Map ? customer['id'] : null),
+      customerName: json['customer_name'] ??
+          (customer is Map
+              ? (customer['name'] ?? customer['full_name'])
+              : null) ??
+          'Unknown',
       totalAmount: (json['total_amount'] ?? 0).toDouble(),
       status: json['status'] ?? 'pending',
-      createdAt: json['created_at'] ?? '',
+      createdAt: json['created_at'] ?? json['pickup_date'] ?? '',
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => Map<String, dynamic>.from(e))
               .toList() ??

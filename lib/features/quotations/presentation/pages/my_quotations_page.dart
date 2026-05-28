@@ -63,8 +63,7 @@ class _MyQuotationsPageState extends State<MyQuotationsPage> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, ctrl.text),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child:
-                const Text('Reject', style: TextStyle(color: Colors.white)),
+            child: const Text('Reject', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -136,12 +135,10 @@ class _MyQuotationsPageState extends State<MyQuotationsPage> {
           if (q.shopName != null) ...[
             const SizedBox(height: 6),
             Row(children: [
-              Icon(Icons.store_outlined,
-                  size: 14, color: Colors.grey.shade500),
+              Icon(Icons.store_outlined, size: 14, color: Colors.grey.shade500),
               const SizedBox(width: 4),
               Text(q.shopName!,
-                  style: TextStyle(
-                      fontSize: 13, color: Colors.grey.shade600)),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
             ]),
           ],
           const SizedBox(height: 8),
@@ -151,18 +148,15 @@ class _MyQuotationsPageState extends State<MyQuotationsPage> {
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(item.name,
-                            style: const TextStyle(fontSize: 12)),
-                        Text(
-                            '\$${item.totalPrice.toStringAsFixed(2)}',
+                        Text(item.name, style: const TextStyle(fontSize: 12)),
+                        Text('\$${item.totalPrice.toStringAsFixed(2)}',
                             style: const TextStyle(fontSize: 12)),
                       ]),
                 )),
             const Divider(),
           ],
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const Text('Total',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
             Text('\$${q.totalAmount.toStringAsFixed(2)}',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,

@@ -10,6 +10,7 @@ class ShopProduct {
   final int? stockQuantity;
   final double? rating;
   final int? ratingCount;
+  final String? imageUrl;
 
   ShopProduct({
     required this.id,
@@ -23,6 +24,7 @@ class ShopProduct {
     this.stockQuantity,
     this.rating,
     this.ratingCount,
+    this.imageUrl,
   });
 
   factory ShopProduct.fromJson(Map<String, dynamic> json) {
@@ -36,8 +38,10 @@ class ShopProduct {
       brand: json['brand'],
       isAvailable: json['is_available'] ?? true,
       stockQuantity: json['stock_quantity'],
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
+      rating:
+          json['rating'] != null ? (json['rating'] as num).toDouble() : null,
       ratingCount: json['rating_count'],
+      imageUrl: json['image_url'] as String?,
     );
   }
 }
@@ -52,6 +56,7 @@ class ShopServiceItem {
   final bool isAvailable;
   final double? rating;
   final int? ratingCount;
+  final String? imageUrl;
 
   ShopServiceItem({
     required this.id,
@@ -63,6 +68,7 @@ class ShopServiceItem {
     required this.isAvailable,
     this.rating,
     this.ratingCount,
+    this.imageUrl,
   });
 
   factory ShopServiceItem.fromJson(Map<String, dynamic> json) {
@@ -76,15 +82,18 @@ class ShopServiceItem {
           json['estimated_minutes'] ??
           json['duration_minutes'],
       isAvailable: json['is_available'] ?? true,
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
+      rating:
+          json['rating'] != null ? (json['rating'] as num).toDouble() : null,
       ratingCount: json['rating_count'],
+      imageUrl: json['image_url'] as String?,
     );
   }
 }
 
 List<T> _parseItems<T>(dynamic raw, T Function(Map<String, dynamic>) fn) {
   if (raw == null) return [];
-  if (raw is List) return raw.map((e) => fn(e as Map<String, dynamic>)).toList();
+  if (raw is List)
+    return raw.map((e) => fn(e as Map<String, dynamic>)).toList();
   return [];
 }
 
