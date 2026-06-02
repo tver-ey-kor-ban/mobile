@@ -84,11 +84,11 @@ class HelpSupportPage extends StatelessWidget {
           ),
 
           // Contact cards
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 20, 16, 4),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: _ContactCard(
                     icon: Icons.email_outlined,
                     label: 'Email Us',
@@ -96,8 +96,8 @@ class HelpSupportPage extends StatelessWidget {
                     color: Colors.blue,
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
+                SizedBox(width: 12),
+                Expanded(
                   child: _ContactCard(
                     icon: Icons.phone_outlined,
                     label: 'Call Us',

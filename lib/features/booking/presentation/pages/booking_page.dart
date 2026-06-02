@@ -143,6 +143,7 @@ class _BookingPageState extends State<BookingPage> {
 
     final request = UnifiedBookingRequest(
       shopId: widget.shopId!,
+      customerVehicleId: _selectedCar!.customerVehicleId,
       vehicleInfo: _selectedCar!.displayName,
       serviceId: _selectedService?.id,
       appointmentDate: _appointmentDate,

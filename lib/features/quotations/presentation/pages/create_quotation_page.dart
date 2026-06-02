@@ -62,6 +62,7 @@ class _CreateQuotationPageState extends State<CreateQuotationPage> {
           title: const Text('Add Item'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             DropdownButtonFormField<String>(
+              // ignore: deprecated_member_use
               value: itemType,
               decoration: const InputDecoration(
                   labelText: 'Type', border: OutlineInputBorder()),

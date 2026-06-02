@@ -94,6 +94,7 @@ class _ShopInvoiceDetailPageState extends State<ShopInvoiceDetailPage> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
+                // ignore: deprecated_member_use
                 value: method,
                 decoration: const InputDecoration(
                     labelText: 'Method', border: OutlineInputBorder()),
