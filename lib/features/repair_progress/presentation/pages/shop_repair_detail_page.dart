@@ -45,6 +45,7 @@ class _ShopRepairDetailPageState extends State<ShopRepairDetailPage> {
           title: const Text('Update Stage'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             DropdownButtonFormField<String>(
+              // ignore: deprecated_member_use
               value: selectedStage,
               decoration: const InputDecoration(
                   labelText: 'New Stage', border: OutlineInputBorder()),

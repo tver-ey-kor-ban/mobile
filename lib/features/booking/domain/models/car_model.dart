@@ -31,12 +31,14 @@ class SelectedCar {
   final String model;
   final String engine;
   final int year;
+  final int? customerVehicleId;
 
   const SelectedCar({
     required this.brand,
     required this.model,
     required this.engine,
     required this.year,
+    this.customerVehicleId,
   });
 
   String get displayName => '$brand $model $engine ($year)';

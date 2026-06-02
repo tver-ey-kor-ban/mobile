@@ -92,8 +92,9 @@ class ShopServiceItem {
 
 List<T> _parseItems<T>(dynamic raw, T Function(Map<String, dynamic>) fn) {
   if (raw == null) return [];
-  if (raw is List)
+  if (raw is List) {
     return raw.map((e) => fn(e as Map<String, dynamic>)).toList();
+  }
   return [];
 }
 

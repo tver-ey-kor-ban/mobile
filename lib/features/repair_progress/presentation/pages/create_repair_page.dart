@@ -75,6 +75,7 @@ class _CreateRepairPageState extends State<CreateRepairPage> {
           padding: const EdgeInsets.all(16),
           children: [
             DropdownButtonFormField<String>(
+              // ignore: deprecated_member_use
               value: _stage,
               decoration: const InputDecoration(
                   labelText: 'Initial Stage', border: OutlineInputBorder()),

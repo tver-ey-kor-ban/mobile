@@ -82,7 +82,7 @@ class _ProductSearchPageState extends State<ProductSearchPage>
     }
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      if (value.trim().length >= 1) _runSearch(value.trim());
+      if (value.trim().isNotEmpty) _runSearch(value.trim());
     });
   }
 
