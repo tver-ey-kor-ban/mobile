@@ -175,4 +175,12 @@ class MechanicApiService {
     }
     return 0;
   }
+
+  // Update appointment/booking status (Owner/Mechanic only)
+  Future<bool> updateAppointmentStatus(int shopId, int apptId, String status) async {
+    final response = await _apiClient.put(
+      '${ApiConstants.updateAppointmentStatus(shopId, apptId)}?new_status=$status',
+    );
+    return response.isSuccess;
+  }
 }

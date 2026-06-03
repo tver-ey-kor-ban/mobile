@@ -80,27 +80,30 @@ class ProductItem {
 /// POST /api/v1/product-orders
 class ProductOrderRequest {
   final int shopId;
-  final int customerVehicleId;
+  final int? customerVehicleId;
   final List<ProductItem> items;
   final DateTime? pickupDate;
   final String? notes;
 
   ProductOrderRequest({
     required this.shopId,
-    required this.customerVehicleId,
+    this.customerVehicleId,
     required this.items,
     this.pickupDate,
     this.notes,
   });
 
   Map<String, dynamic> toJson() {
-    return {
+    final jsonMap = <String, dynamic>{
       'shop_id': shopId,
-      'customer_vehicle_id': customerVehicleId,
       'items': items.map((item) => item.toJson()).toList(),
       'pickup_date': pickupDate?.toUtc().toIso8601String(),
       'notes': notes,
     };
+    if (customerVehicleId != null) {
+      jsonMap['customer_vehicle_id'] = customerVehicleId;
+    }
+    return jsonMap;
   }
 }
 

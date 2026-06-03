@@ -127,8 +127,11 @@ class _ProductDetailSheet extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (_) =>
-                  BookingPage(shopId: shop.id, shopName: shop.name)),
+              builder: (_) => BookingPage(
+                    shopId: shop.id,
+                    shopName: shop.name,
+                    preSelectedProductId: product.id,
+                  )),
         );
       },
       secondaryLabel: 'Rate this Product',
