@@ -8,17 +8,26 @@ import '../../services/booking_api_service.dart';
 import '../../data/models/booking_request_model.dart';
 import '../../domain/models/car_model.dart';
 import 'widgets/step_one_car_selection.dart';
+import '../../../../shared/widgets/item_image.dart';
+
+enum BookingStepType {
+  vehicleSelection,
+  servicesAndProducts,
+  confirm,
+}
 
 class BookingPage extends StatefulWidget {
   final int? shopId;
   final String? shopName;
   final int? preSelectedServiceId;
+  final int? preSelectedProductId;
 
   const BookingPage({
     super.key,
     this.shopId,
     this.shopName,
     this.preSelectedServiceId,
+    this.preSelectedProductId,
   });
 
   @override
@@ -31,6 +40,20 @@ class _BookingPageState extends State<BookingPage> {
 
   int _step = 0;
   bool _authChecked = false;
+
+  List<BookingStepType> get _activeSteps {
+    if (widget.preSelectedProductId != null) {
+      return [
+        BookingStepType.servicesAndProducts,
+      ];
+    } else {
+      return [
+        BookingStepType.vehicleSelection,
+        BookingStepType.servicesAndProducts,
+        BookingStepType.confirm,
+      ];
+    }
+  }
 
   // Step 1 — Vehicle
   SelectedCar? _selectedCar;
@@ -50,6 +73,9 @@ class _BookingPageState extends State<BookingPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.preSelectedProductId != null) {
+      _productQty[widget.preSelectedProductId!] = 1;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkAuth());
   }
 
@@ -103,32 +129,43 @@ class _BookingPageState extends State<BookingPage> {
 
   // ── Validation ──────────────────────────────────────────────
 
-  bool get _step1Valid => _selectedCar != null;
-
-  bool get _step2Valid =>
+  bool get _isServicesAndProductsValid =>
       _selectedService != null || _productQty.values.any((q) => q > 0);
 
-  // Date is required only when a service is selected
-  bool get _step3Valid => _selectedService == null || _appointmentDate != null;
+  bool get _isVehicleValid => _selectedCar != null;
+
+  bool get _isConfirmValid =>
+      _selectedService == null || _appointmentDate != null;
 
   void _next() {
-    if (_step == 0 && !_step1Valid) {
-      _snack('Please select your vehicle');
-      return;
+    final currentStepType = _activeSteps[_step];
+
+    switch (currentStepType) {
+      case BookingStepType.vehicleSelection:
+        if (!_isVehicleValid) {
+          _snack('Please select your vehicle');
+          return;
+        }
+        break;
+      case BookingStepType.servicesAndProducts:
+        if (!_isServicesAndProductsValid) {
+          _snack('Please select a service or add at least one product');
+          return;
+        }
+        break;
+      case BookingStepType.confirm:
+        if (!_isConfirmValid) {
+          _snack('Please select an appointment date & time');
+          return;
+        }
+        break;
     }
-    if (_step == 1 && !_step2Valid) {
-      _snack('Please select a service or add at least one product');
-      return;
-    }
-    if (_step == 2) {
-      if (!_step3Valid) {
-        _snack('Please select an appointment date & time');
-        return;
-      }
+
+    if (_step == _activeSteps.length - 1) {
       _submit();
-      return;
+    } else {
+      setState(() => _step++);
     }
-    setState(() => _step++);
   }
 
   // ── Submit ───────────────────────────────────────────────────
@@ -141,27 +178,49 @@ class _BookingPageState extends State<BookingPage> {
         .map((e) => ProductItem(productId: e.key, quantity: e.value))
         .toList();
 
-    final request = UnifiedBookingRequest(
-      shopId: widget.shopId!,
-      customerVehicleId: _selectedCar!.customerVehicleId,
-      vehicleInfo: _selectedCar!.displayName,
-      serviceId: _selectedService?.id,
-      appointmentDate: _appointmentDate,
-      productItems: items,
-      notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-    );
+    if (_selectedService == null) {
+      // Direct Product Order Flow
+      final request = ProductOrderRequest(
+        shopId: widget.shopId!,
+        customerVehicleId: _selectedCar?.customerVehicleId,
+        items: items,
+        pickupDate: _appointmentDate,
+        notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+      );
 
-    try {
-      await _bookingService.createUnifiedBooking(request);
-      setState(() => _submitting = false);
-      if (mounted) _showSuccess();
-    } catch (e) {
-      setState(() => _submitting = false);
-      if (mounted) _snack('Booking failed: ${e.toString()}', error: true);
+      try {
+        await _bookingService.createProductOrder(request);
+        setState(() => _submitting = false);
+        if (mounted) _showSuccess();
+      } catch (e) {
+        setState(() => _submitting = false);
+        if (mounted) _snack('Order failed: ${e.toString()}', error: true);
+      }
+    } else {
+      // Unified Booking Flow
+      final request = UnifiedBookingRequest(
+        shopId: widget.shopId!,
+        customerVehicleId: _selectedCar!.customerVehicleId,
+        vehicleInfo: _selectedCar!.displayName,
+        serviceId: _selectedService?.id,
+        appointmentDate: _appointmentDate,
+        productItems: items,
+        notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+      );
+
+      try {
+        await _bookingService.createUnifiedBooking(request);
+        setState(() => _submitting = false);
+        if (mounted) _showSuccess();
+      } catch (e) {
+        setState(() => _submitting = false);
+        if (mounted) _snack('Booking failed: ${e.toString()}', error: true);
+      }
     }
   }
 
   void _showSuccess() {
+    final isProductOnly = _selectedService == null;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -170,11 +229,13 @@ class _BookingPageState extends State<BookingPage> {
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           const Icon(Icons.check_circle, color: Colors.green, size: 64),
           const SizedBox(height: 16),
-          const Text('Booking Confirmed!',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(isProductOnly ? 'Order Confirmed!' : 'Booking Confirmed!',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text(
-            'Your booking at ${widget.shopName ?? 'the shop'} has been submitted.',
+            isProductOnly
+                ? 'Your product order at ${widget.shopName ?? 'the shop'} has been submitted.'
+                : 'Your booking at ${widget.shopName ?? 'the shop'} has been submitted.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade600),
           ),
@@ -224,10 +285,17 @@ class _BookingPageState extends State<BookingPage> {
       );
     }
 
+    final steps = _activeSteps;
+    if (_step >= steps.length) {
+      _step = steps.length - 1;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.shopName != null
-            ? 'Book at ${widget.shopName}'
+            ? (widget.preSelectedProductId != null || _selectedService == null
+                ? 'Order from ${widget.shopName}'
+                : 'Book at ${widget.shopName}')
             : 'Book Appointment'),
         backgroundColor: Colors.red.shade700,
         foregroundColor: Colors.white,
@@ -235,11 +303,18 @@ class _BookingPageState extends State<BookingPage> {
       body: Column(children: [
         _buildStepper(),
         Expanded(
-          child: _step == 0
-              ? _buildStep1()
-              : _step == 1
-                  ? _buildStep2()
-                  : _buildStep3(),
+          child: () {
+            // Ensure step index is valid
+            final currentStep = _step < steps.length ? steps[_step] : steps.last;
+            switch (currentStep) {
+              case BookingStepType.vehicleSelection:
+                return _buildStep1();
+              case BookingStepType.servicesAndProducts:
+                return _buildStep2();
+              case BookingStepType.confirm:
+                return _buildStep3();
+            }
+          }(),
         ),
         _buildFooter(),
       ]),
@@ -247,12 +322,26 @@ class _BookingPageState extends State<BookingPage> {
   }
 
   Widget _buildStepper() {
-    const labels = ['Vehicle', 'Services', 'Confirm'];
+    final steps = _activeSteps;
+    if (steps.length <= 1) {
+      return const SizedBox.shrink();
+    }
+    final labels = steps.map((type) {
+      switch (type) {
+        case BookingStepType.vehicleSelection:
+          return 'Vehicle';
+        case BookingStepType.servicesAndProducts:
+          return _selectedService != null ? 'Services' : 'Products';
+        case BookingStepType.confirm:
+          return 'Confirm';
+      }
+    }).toList();
+
     return Container(
       color: Colors.red.shade700,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Row(
-        children: List.generate(3, (i) {
+        children: List.generate(steps.length, (i) {
           final done = i < _step;
           final active = i == _step;
           return Expanded(
@@ -282,7 +371,7 @@ class _BookingPageState extends State<BookingPage> {
                         fontSize: 10,
                         color: active || done ? Colors.white : Colors.white60)),
               ]),
-              if (i < 2) const Expanded(child: SizedBox()),
+              if (i < steps.length - 1) const Expanded(child: SizedBox()),
             ]),
           );
         }),
@@ -304,16 +393,164 @@ class _BookingPageState extends State<BookingPage> {
 
   // ── Step 2: Service + Products ───────────────────────────────
 
+  Widget _buildPreSelectedProductBanner(ShopProduct p) {
+    final qty = _productQty[p.id] ?? 0;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.red.shade900, Colors.red.shade700],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.red.shade900.withValues(alpha: 0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          ItemImage(
+            imageUrl: p.imageUrl,
+            size: 70,
+            borderRadius: 12,
+            fallbackIcon: Icons.inventory_2_outlined,
+            fallbackBg: Colors.white.withValues(alpha: 0.2),
+            fallbackColor: Colors.white,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Item Selected',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  p.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '\$${p.price.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Stepper
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _qtyBtnBanner(
+                  icon: Icons.remove,
+                  onTap: qty > 0
+                      ? () => setState(() {
+                            if (qty == 1) {
+                              _productQty.remove(p.id);
+                            } else {
+                              _productQty[p.id] = qty - 1;
+                            }
+                          })
+                      : null,
+                ),
+                SizedBox(
+                  width: 36,
+                  child: Text(
+                    '$qty',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                _qtyBtnBanner(
+                  icon: Icons.add,
+                  onTap: () => setState(() => _productQty[p.id] = qty + 1),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _qtyBtnBanner({required IconData icon, required VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: onTap != null ? Colors.white : Colors.white24,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          size: 16,
+          color: onTap != null ? Colors.red.shade900 : Colors.white38,
+        ),
+      ),
+    );
+  }
+
   Widget _buildStep2() {
     if (_loadingItems) {
       return const Center(child: CircularProgressIndicator());
     }
 
+    final preProduct = widget.preSelectedProductId != null
+        ? _products.cast<ShopProduct?>().firstWhere(
+              (p) => p?.id == widget.preSelectedProductId,
+              orElse: () => null,
+            )
+        : null;
+
+    final otherProducts = preProduct != null
+        ? _products.where((p) => p.id != preProduct.id).toList()
+        : _products;
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (preProduct != null) ...[
+          _buildPreSelectedProductBanner(preProduct),
+        ],
+
         // Services section
-        if (_services.isNotEmpty) ...[
+        if (_services.isNotEmpty && widget.preSelectedProductId == null) ...[
           const Text('Select a Service',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
@@ -325,17 +562,20 @@ class _BookingPageState extends State<BookingPage> {
         ],
 
         // Products section
-        if (_products.isNotEmpty) ...[
-          const Text('Add Products',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        if (otherProducts.isNotEmpty) ...[
+          Text(preProduct != null ? 'Other Products' : 'Add Products',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('Optional — add items to your order',
+          Text(
+              preProduct != null
+                  ? 'Add additional items to your order'
+                  : 'Optional — add items to your order',
               style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
           const SizedBox(height: 10),
-          ..._products.map((p) => _productCard(p)),
+          ...otherProducts.map((p) => _productCard(p)),
         ],
 
-        if (_services.isEmpty && _products.isEmpty)
+        if (_services.isEmpty && otherProducts.isEmpty && preProduct == null)
           Center(
             child: Padding(
               padding: const EdgeInsets.all(32),
@@ -433,15 +673,13 @@ class _BookingPageState extends State<BookingPage> {
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: qty > 0 ? Colors.red.shade50 : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(Icons.inventory_2_outlined,
-                color: qty > 0 ? Colors.red.shade700 : Colors.grey.shade500,
-                size: 22),
+          ItemImage(
+            imageUrl: p.imageUrl,
+            size: 44,
+            borderRadius: 10,
+            fallbackIcon: Icons.inventory_2_outlined,
+            fallbackBg: qty > 0 ? Colors.red.shade50 : Colors.grey.shade100,
+            fallbackColor: qty > 0 ? Colors.red.shade700 : Colors.grey.shade500,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -583,9 +821,11 @@ class _BookingPageState extends State<BookingPage> {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(children: [
-              _summaryRow('Vehicle', _selectedCar?.displayName ?? ''),
-              if (_selectedService != null) ...[
+              if (_selectedCar != null) ...[
+                _summaryRow('Vehicle', _selectedCar!.displayName),
                 const Divider(height: 16),
+              ],
+              if (_selectedService != null) ...[
                 _summaryRow('Service', _selectedService!.name,
                     value: '\$${serviceTotal.toStringAsFixed(2)}'),
               ],
@@ -708,7 +948,10 @@ class _BookingPageState extends State<BookingPage> {
                     width: 20,
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white))
-                : Text(_step == 2 ? 'Confirm Booking' : 'Next',
+                : Text(
+                    _step == _activeSteps.length - 1
+                        ? (_selectedService == null ? 'Place Order' : 'Confirm Booking')
+                        : 'Next',
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w600)),
           ),

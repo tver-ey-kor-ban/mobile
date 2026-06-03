@@ -12,6 +12,7 @@ import '../../../quotations/presentation/pages/my_quotations_page.dart';
 import '../../../invoices/presentation/pages/my_invoices_page.dart';
 import '../../../mechanic/presentation/pages/mechanic_dashboard_page.dart';
 import '../../../chat/presentation/pages/chat_rooms_page.dart';
+import '../../../notifications/services/notification_manager.dart';
 import 'edit_profile_page.dart';
 import 'help_support_page.dart';
 
@@ -223,6 +224,20 @@ class ProfilePage extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (_) => const NotificationsPage()),
                   ),
+                ),
+                const SizedBox(height: 4),
+                _buildMenuTile(
+                  icon: Icons.notification_important_outlined,
+                  title: 'Trigger Test Notification',
+                  subtitle: 'Simulate a sliding heads-up popup',
+                  onTap: () {
+                    context.read<NotificationManager>().triggerDemoNotification(
+                      title: 'New Booking Request',
+                      message: 'Toyota Camry 2020 needs an Oil Change service at 10:00 AM.',
+                      type: 'new_booking',
+                      appointmentId: 5,
+                    );
+                  },
                 ),
                 const SizedBox(height: 4),
                 _buildMenuTile(

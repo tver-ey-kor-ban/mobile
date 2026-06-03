@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/services/auth_service.dart';
 import '../../services/notification_api_service.dart';
+import '../../services/notification_manager.dart';
 import '../../data/models/notification_model.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -24,13 +25,23 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<void> _load() async {
-    final token = context.read<AuthService>().token;
+    final auth = context.read<AuthService>();
+    final token = auth.token;
     if (token != null) _service.setAuthToken(token);
     setState(() => _loading = true);
     final result = await _service.getMyNotifications(limit: 100);
+
+    var notifs = (result['notifications'] as List<dynamic>? ?? [])
+        .cast<NotificationModel>()
+        .toList();
+    
+    if (auth.isCustomer) {
+      notifs = notifs.where((n) => n.type != 'new_booking').toList();
+    }
+
     setState(() {
-      _unreadCount = result['unread_count'] as int;
-      _notifications = result['notifications'] as List<NotificationModel>;
+      _notifications = notifs;
+      _unreadCount = _notifications.where((n) => n.isUnread).length;
       _loading = false;
     });
   }
@@ -103,7 +114,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Widget _buildItem(NotificationModel n) {
     return InkWell(
-      onTap: () => _markRead(n),
+      onTap: () async {
+        await _markRead(n);
+        if (mounted) {
+          context.read<NotificationManager>().handleNavigation(context, n);
+        }
+      },
       child: Container(
         color: n.isUnread ? Colors.red.shade50 : Colors.transparent,
         child: ListTile(
@@ -181,9 +197,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   String _formatDate(String d) {
     try {
-      final dt = DateTime.parse(d);
+      var dt = DateTime.parse(d);
+      if (!dt.isUtc && !d.contains('Z') && !d.contains('+')) {
+        dt = DateTime.parse('${d.replaceFirst(' ', 'T')}Z');
+      }
+      dt = dt.toLocal();
       final now = DateTime.now();
       final diff = now.difference(dt);
+      if (diff.inMinutes < 0) return 'Just now';
       if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
       if (diff.inHours < 24) return '${diff.inHours}h ago';
       return '${dt.day}/${dt.month}/${dt.year}';
