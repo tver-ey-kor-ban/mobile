@@ -6,6 +6,7 @@ import '../../data/models/shop_model.dart';
 import '../../data/models/browse_models.dart';
 import '../../services/browse_api_service.dart';
 import '../widgets/item_detail_sheet.dart';
+import 'package:my_app/features/search/presentation/pages/image_search_page.dart';
 
 class ShopProductsPage extends StatefulWidget {
   final ShopResponse shop;
@@ -201,7 +202,20 @@ class _ShopProductsPageState extends State<ShopProductsPage>
                             _onSearch('');
                           },
                         )
-                      : null,
+                      : IconButton(
+                          icon: const Icon(Icons.photo_camera_outlined, size: 20),
+                          color: Colors.red.shade700,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ImageSearchPage(
+                                  shopId: widget.shop.id,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                   filled: true,
                   fillColor: Colors.grey.shade100,
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),

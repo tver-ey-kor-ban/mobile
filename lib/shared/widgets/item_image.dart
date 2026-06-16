@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../core/network/api_constants.dart';
 
@@ -40,10 +42,23 @@ class ItemImage extends StatelessWidget {
   /// Resolves the stored value to a fully-qualified HTTPS URL.
   /// Returns null for base64 data URIs (handled by [_decodeBase64]).
   String? _resolveUrl() {
-    final raw = imageUrl?.trim();
+    var raw = imageUrl?.trim();
     if (raw == null || raw.isEmpty) return null;
     if (raw.startsWith('data:')) return null; // handled as base64
-    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      if (!kIsWeb && Platform.isAndroid) {
+        if (raw.contains('//localhost:8000')) {
+          raw = raw.replaceAll('//localhost:8000', '//10.0.2.2:8000');
+        } else if (raw.contains('//127.0.0.1:8000')) {
+          raw = raw.replaceAll('//127.0.0.1:8000', '//10.0.2.2:8000');
+        } else if (raw.contains('//localhost:')) {
+          raw = raw.replaceAll('//localhost:', '//10.0.2.2:');
+        } else if (raw.contains('//127.0.0.1:')) {
+          raw = raw.replaceAll('//127.0.0.1:', '//10.0.2.2:');
+        }
+      }
+      return raw;
+    }
     // Relative path — prepend API base URL
     return '${ApiConstants.baseUrl}${raw.startsWith('/') ? raw : '/$raw'}';
   }

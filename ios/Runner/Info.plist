@@ -57,5 +57,11 @@
 	<!-- Microphone permission (needed for video recording) -->
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access for video recording</string>
+	
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
