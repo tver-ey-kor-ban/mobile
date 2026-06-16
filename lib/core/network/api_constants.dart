@@ -1,6 +1,8 @@
+import 'api_config.dart';
+
 class ApiConstants {
-  static const String baseUrl = 'https://backend-1-s2fl.onrender.com';
-  static const String apiVersion = '/api/v1';
+  static String get baseUrl => ApiConfig.baseUrl;
+  static const String apiVersion = ApiConfig.apiVersion;
 
   // Auth
   static const String login = '$apiVersion/auth/login';

@@ -8,6 +8,7 @@ import 'package:my_app/features/shop/presentation/pages/shop_detail_page.dart';
 import 'package:my_app/features/booking/presentation/pages/booking_page.dart';
 import 'package:my_app/features/auth/presentation/pages/login_page.dart'
     as login;
+import 'package:my_app/features/search/presentation/pages/image_search_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -201,7 +202,18 @@ class _HomePageState extends State<HomePage> {
                     _filter('');
                   },
                 )
-              : null,
+              : IconButton(
+                  icon: const Icon(Icons.photo_camera_outlined, size: 22),
+                  color: Colors.red.shade700,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ImageSearchPage(),
+                      ),
+                    );
+                  },
+                ),
           filled: true,
           fillColor: Colors.grey.shade100,
           contentPadding: const EdgeInsets.symmetric(vertical: 0),

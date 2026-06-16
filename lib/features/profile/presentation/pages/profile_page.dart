@@ -153,6 +153,19 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
+                ] else if (!auth.isMechanic && !auth.isAdmin) ...[
+                  _buildMenuTile(
+                    icon: Icons.store_outlined,
+                    title: 'Register as Shop Owner',
+                    subtitle: 'Become a shop owner & create your store',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CreateShopPage()),
+                    ).then((_) {
+                      auth.tryRestoreSession();
+                    }),
+                  ),
+                  const SizedBox(height: 4),
                 ],
 
                 // Customer sections

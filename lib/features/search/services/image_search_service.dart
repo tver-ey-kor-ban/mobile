@@ -1,165 +1,83 @@
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
+import '../../../core/network/api_constants.dart';
+import '../../shop/data/models/browse_models.dart';
 
 /// Service for image-based product search
-/// NOTE: Currently returns static mock data. Replace with actual API calls when endpoint is ready.
 class ImageSearchService {
-  /// Search products by uploading an image
-  /// Returns a list of similar products (STATIC - Mock data for now)
-  Future<ImageSearchResult> searchByImage(
-    File imageFile, {
-    int limit = 10,
-    double? minSimilarity,
-  }) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
+  final http.Client _client;
 
-    // Return static mock data
-    return ImageSearchResult(
-      products: [
-        SimilarProduct(
-          id: 1,
-          name: 'Brake Pad Set - Toyota Camry 2020',
-          description: 'High-quality ceramic brake pads for Toyota Camry',
-          price: 45.99,
-          currency: 'USD',
-          similarityScore: 0.95,
-          imageUrl: 'https://via.placeholder.com/150',
-          category: 'Brakes',
-          brand: 'Bosch',
+  ImageSearchService({http.Client? client}) : _client = client ?? http.Client();
+
+  /// Search products by uploading an image to a specific shop
+  Future<ImageSearchResult> searchByImage(
+    File imageFile,
+    int shopId, {
+    int limit = 10,
+  }) async {
+    try {
+      final uri = Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.apiVersion}/search/image?shop_id=$shopId');
+      
+      final request = http.MultipartRequest('POST', uri);
+      
+      // Determine mimetype based on file extension
+      final fileExtension = imageFile.path.split('.').last.toLowerCase();
+      String mimeType = 'image/jpeg';
+      if (fileExtension == 'png') {
+        mimeType = 'image/png';
+      } else if (fileExtension == 'webp') {
+        mimeType = 'image/webp';
+      }
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'image',
+          imageFile.path,
+          contentType: MediaType.parse(mimeType),
         ),
-        SimilarProduct(
-          id: 2,
-          name: 'Engine Oil Filter',
-          description: 'Premium oil filter for various vehicle models',
-          price: 12.50,
-          currency: 'USD',
-          similarityScore: 0.87,
-          imageUrl: 'https://via.placeholder.com/150',
-          category: 'Engine',
-          brand: 'Mann-Filter',
-        ),
-        SimilarProduct(
-          id: 3,
-          name: 'Air Filter - Honda Civic',
-          description: 'OEM replacement air filter',
-          price: 18.99,
-          currency: 'USD',
-          similarityScore: 0.82,
-          imageUrl: 'https://via.placeholder.com/150',
-          category: 'Engine',
-          brand: 'Honda Genuine',
-        ),
-        SimilarProduct(
-          id: 4,
-          name: 'Spark Plug Set (4 pcs)',
-          description: 'Iridium spark plugs for better performance',
-          price: 32.00,
-          currency: 'USD',
-          similarityScore: 0.78,
-          imageUrl: 'https://via.placeholder.com/150',
-          category: 'Ignition',
-          brand: 'NGK',
-        ),
-        SimilarProduct(
-          id: 5,
-          name: 'Wiper Blade 26"',
-          description: 'All-season wiper blade',
-          price: 15.99,
-          currency: 'USD',
-          similarityScore: 0.71,
-          imageUrl: 'https://via.placeholder.com/150',
-          category: 'Wipers',
-          brand: 'Rain-X',
-        ),
-      ],
-      totalResults: 5,
-      searchId: 'mock-search-001',
-      message: 'Static results - API endpoint not yet available',
-    );
+      );
+
+      final streamedResponse = await _client.send(request);
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        return ImageSearchResult.fromJson(jsonResponse);
+      } else {
+        throw Exception('Failed to perform image search. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Image search request failed: $e');
+    }
   }
 
-  /// Search products with additional text query combined with image
-  /// (STATIC - Mock data for now)
+  /// Search products with additional text query combined with image (optional endpoint)
   Future<ImageSearchResult> searchByImageAndText(
     File imageFile,
+    int shopId,
     String textQuery, {
     int limit = 10,
   }) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Filter mock products based on text query (simple contains check)
-    final allProducts = [
-      SimilarProduct(
-        id: 1,
-        name: 'Brake Pad Set - Toyota Camry 2020',
-        description: 'High-quality ceramic brake pads for Toyota Camry',
-        price: 45.99,
-        currency: 'USD',
-        similarityScore: 0.95,
-        imageUrl: 'https://via.placeholder.com/150',
-        category: 'Brakes',
-        brand: 'Bosch',
-      ),
-      SimilarProduct(
-        id: 2,
-        name: 'Engine Oil Filter',
-        description: 'Premium oil filter for various vehicle models',
-        price: 12.50,
-        currency: 'USD',
-        similarityScore: 0.87,
-        imageUrl: 'https://via.placeholder.com/150',
-        category: 'Engine',
-        brand: 'Mann-Filter',
-      ),
-      SimilarProduct(
-        id: 3,
-        name: 'Air Filter - Honda Civic',
-        description: 'OEM replacement air filter',
-        price: 18.99,
-        currency: 'USD',
-        similarityScore: 0.82,
-        imageUrl: 'https://via.placeholder.com/150',
-        category: 'Engine',
-        brand: 'Honda Genuine',
-      ),
-      SimilarProduct(
-        id: 4,
-        name: 'Spark Plug Set (4 pcs)',
-        description: 'Iridium spark plugs for better performance',
-        price: 32.00,
-        currency: 'USD',
-        similarityScore: 0.78,
-        imageUrl: 'https://via.placeholder.com/150',
-        category: 'Ignition',
-        brand: 'NGK',
-      ),
-      SimilarProduct(
-        id: 5,
-        name: 'Wiper Blade 26"',
-        description: 'All-season wiper blade',
-        price: 15.99,
-        currency: 'USD',
-        similarityScore: 0.71,
-        imageUrl: 'https://via.placeholder.com/150',
-        category: 'Wipers',
-        brand: 'Rain-X',
-      ),
-    ];
-
-    final filteredProducts = textQuery.isEmpty
-        ? allProducts
-        : allProducts
-            .where((p) =>
-                p.name.toLowerCase().contains(textQuery.toLowerCase()) ||
-                p.category!.toLowerCase().contains(textQuery.toLowerCase()))
-            .toList();
+    // For now, we reuse the same image search endpoint and filter/search results on client
+    final result = await searchByImage(imageFile, shopId, limit: limit);
+    if (textQuery.trim().isEmpty) {
+      return result;
+    }
+    
+    final filteredProducts = result.products
+        .where((p) =>
+            p.name.toLowerCase().contains(textQuery.toLowerCase()) ||
+            (p.category != null && p.category!.toLowerCase().contains(textQuery.toLowerCase())))
+        .toList();
 
     return ImageSearchResult(
-      products: filteredProducts.take(limit).toList(),
+      products: filteredProducts,
       totalResults: filteredProducts.length,
-      searchId: 'mock-search-text-001',
-      message: 'Static results - API endpoint not yet available',
+      searchId: result.searchId,
+      message: result.message,
     );
   }
 }
@@ -246,5 +164,23 @@ class SimilarProduct {
   /// Get similarity percentage
   String get similarityPercentage {
     return '${(similarityScore * 100).toStringAsFixed(1)}%';
+  }
+
+  /// Convert to standard ShopProduct model for details sheet integration
+  ShopProduct toShopProduct() {
+    return ShopProduct(
+      id: id,
+      name: name,
+      description: description,
+      price: price ?? 0.0,
+      currency: currency,
+      category: category,
+      brand: brand,
+      isAvailable: additionalData?['is_active'] ?? additionalData?['is_available'] ?? true,
+      stockQuantity: additionalData?['stock_quantity'],
+      rating: additionalData?['rating'] != null ? (additionalData!['rating'] as num).toDouble() : null,
+      ratingCount: additionalData?['rating_count'],
+      imageUrl: imageUrl,
+    );
   }
 }

@@ -221,6 +221,9 @@ class _CreateShopPageState extends State<CreateShopPage> {
 
         final shop = await _shopService.createShop(request);
 
+        // Refresh user session roles immediately to reflect shop ownership
+        await auth.tryRestoreSession();
+
         setState(() {
           _isLoading = false;
         });
